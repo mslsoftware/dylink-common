@@ -1,3 +1,6 @@
 /dylink-common/*.iml
 /dylink-common/target
 /dylink-data/target
+/.idea/
+/dylink-sdk.iml
+/dylink-data/dylink-data.iml
