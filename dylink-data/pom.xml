@@ -6,7 +6,7 @@
 
     <groupId>cn.net.vidyo</groupId>
     <artifactId>dylink-data</artifactId>
-    <version>1.0.0.2.RELEASE</version>
+    <version>1.0.0.3.RELEASE</version>
     <packaging>jar</packaging>
 
 
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>cn.net.vidyo</groupId>
             <artifactId>dylink-common</artifactId>
-            <version>1.0.0.2.RELEASE</version>
+            <version>1.0.0.3.RELEASE</version>
         </dependency>
 
         <dependency>

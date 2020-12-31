@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cn.net.vidyo</groupId>
     <artifactId>dylink-sdk</artifactId>
-    <version>1.0.0.2.RELEASE</version>
+    <version>1.0.0.3.RELEASE</version>
     <packaging>pom</packaging>
 
     <modules>
