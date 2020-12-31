@@ -6,7 +6,7 @@
 
     <groupId>cn.net.vidyo</groupId>
     <artifactId>dylink-data</artifactId>
-    <version>1.0.0.3.RELEASE</version>
+    <version>1.0.0.4.RELEASE</version>
     <packaging>jar</packaging>
 
 
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>cn.net.vidyo</groupId>
             <artifactId>dylink-common</artifactId>
-            <version>1.0.0.3.RELEASE</version>
+            <version>1.0.0.4.RELEASE</version>
         </dependency>
 
         <dependency>
@@ -71,20 +71,6 @@
                     <target>1.8</target>
                     <encoding>utf-8</encoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
