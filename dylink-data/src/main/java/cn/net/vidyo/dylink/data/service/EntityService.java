@@ -9,25 +9,31 @@ import java.io.Serializable;
 import java.util.List;
 
 public interface EntityService<DAO extends CommonJpaRepository<T, ID>, T, ID extends Serializable> {
-    public T getById(ID id);
+    T getById(ID id);
 
     void deleteAll();
     int truncateParmeryKey();
 
-    public String getNameById(ID id);
+    String getNameById(ID id);
 
-    public List<T> findByIds(List<ID> ids);
+    List<T> findByIds(List<ID> ids);
 
-    public List<T> findByIds(ID[] ids);
+    List<T> findByIds(ID[] ids);
 
     //long hiddenByIdIn(boolean hidden,Iterable<ID> ids);
-    public long deleteByIdIn(Iterable<ID> ids);
+    long deleteByIdIn(Iterable<ID> ids);
 
-    public Result add(T t) ;
+    T save(T t);
 
-    public Result update(T entity) ;
+    void deleteById(ID id);
 
-    public Result save(T t);
 
-    public Result deleteById(ID id);
+
+//    Result add1(T t) ;
+//
+//    Result update1(T entity) ;
+//
+//    Result save1(T t);
+//
+//    Result deleteById1(ID id);
 }

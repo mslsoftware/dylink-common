@@ -26,25 +26,25 @@ public class UserLogic {
 //    public Result query(User user){
 //        userService.
 //    }
-    public Result add(User user){
-        if(user==null){
-            return Result.fail(CommonEnumCodes.IS_EMPT);
-        }
-        return userService.add(user);
-    }
-    public Result delete(int id){
-        try {
-            userDao.deleteById(id);
-        }catch (Exception ex){
-            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
-        }
-        return Result.ok();
-    }
-    public Result edit(User user){
-        if(user==null){
-            return Result.fail(CommonEnumCodes.IS_EMPT);
-        }
-        return userService.update(user);
-    }
+//    public Result add(User user){
+//        if(user==null){
+//            return Result.fail(CommonEnumCodes.IS_EMPT);
+//        }
+//        return userService.add(user);
+//    }
+//    public Result delete(int id){
+//        try {
+//            userDao.deleteById(id);
+//        }catch (Exception ex){
+//            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
+//        }
+//        return Result.ok();
+//    }
+//    public Result edit(User user){
+//        if(user==null){
+//            return Result.fail(CommonEnumCodes.IS_EMPT);
+//        }
+//        return userService.update(user);
+//    }
 
 }

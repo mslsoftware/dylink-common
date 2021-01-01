@@ -59,44 +59,51 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
         return getEntityDao().deleteByIdIn(ids);
     }
 
-    public Result add(T t) {
-        T save = getEntityDao().save(t);
-        if (save == null) {
-            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
-        }
-        return Result.ok(save);
+    public T save(T t){
+        return getEntityDao().save(t);
     }
 
-    public Result update(T entity) {
-        T model = getEntityDao().getByEntityId(entity);
-        if (model == null) {
-            return Result.fail(CommonEnumCodes.NOT_EXIST);
-        }
-        model = ObjectUtil.copyPropertiesByNotDefaultValue(entity, model);
-        model = convertEntityOfUpdate(entity, model);
-        T save = getEntityDao().save(model);
-        if (save == null) {
-            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
-        }
-        return Result.ok(save);
-    }
-
-    protected T convertEntityOfUpdate(T source, T target) {
-        return target;
-    }
-
-    public Result save(T t) {
-        T entity = getEntityDao().getByEntityId(t);
-        if (entity == null) {
-            return add(t);
-        }
-        return update(t);
-    }
-
-    public Result deleteById(ID id) {
+    public void deleteById(ID id){
         getEntityDao().deleteById(id);
-        return Result.ok();
     }
+//    public Result add1(T t) {
+//        T save = getEntityDao().save(t);
+//        if (save == null) {
+//            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
+//        }
+//        return Result.ok(save);
+//    }
+
+//    public Result update1(T entity) {
+//        T model = getEntityDao().getByEntityId(entity);
+//        if (model == null) {
+//            return Result.fail(CommonEnumCodes.NOT_EXIST);
+//        }
+//        model = ObjectUtil.copyPropertiesByNotDefaultValue(entity, model);
+//        model = convertEntityOfUpdate(entity, model);
+//        T save = getEntityDao().save(model);
+//        if (save == null) {
+//            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
+//        }
+//        return Result.ok(save);
+//    }
+//
+//    protected T convertEntityOfUpdate(T source, T target) {
+//        return target;
+//    }
+//
+//    public Result save1(T t) {
+//        T entity = getEntityDao().getByEntityId(t);
+//        if (entity == null) {
+//            return add1(t);
+//        }
+//        return update1(t);
+//    }
+//
+//    public Result deleteById1(ID id) {
+//        getEntityDao().deleteById(id);
+//        return Result.ok();
+//    }
 
 
 }

@@ -1,10 +1,4 @@
 package cn.net.vidyo.dylink.data.jpa;
-
-//import com.ecs.interaction.util.ListUtil;
-
-
-import cn.net.vidyo.dylink.common.CommonEnumCodes;
-import cn.net.vidyo.dylink.common.Result;
 import cn.net.vidyo.dylink.data.domain.Condition;
 import cn.net.vidyo.dylink.util.ListUtil;
 import cn.net.vidyo.dylink.util.MapUtil;
@@ -14,21 +8,21 @@ import org.hibernate.transform.Transformers;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-
 public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> implements CommonJpaRepository<T, ID> {
 
     private final EntityManager entityManager;
@@ -42,8 +36,6 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         this.entityInformation = entityInformation;
         this.entityClass = entityInformation.getJavaType();
     }
-
-
     //<editor-fold desc="update">
     @Override
     public T updateStatusById(ID id, Object value) {
