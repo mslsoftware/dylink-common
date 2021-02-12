@@ -3,8 +3,6 @@ package cn.net.vidyo.dylink.data.jpa;
 import cn.net.vidyo.dylink.data.domain.Condition;
 import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
 import cn.net.vidyo.dylink.data.jpa.support.DefaultEntityEventCallback;
-import cn.net.vidyo.dylink.util.ListUtil;
-import cn.net.vidyo.dylink.util.MapUtil;
 import cn.net.vidyo.dylink.util.ObjectUtil;
 import org.hibernate.query.internal.NativeQueryImpl;
 import org.hibernate.transform.Transformers;
@@ -355,47 +353,47 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     //<editor-fold desc="query condition">
 
     //<editor-fold desc="query object">
-    public Object getColumn(String columnName,ICondition condition,IConditionCompose iConditionCompose) {
+    public Object getColumn(String columnName, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return getColumn(columnName,queryWhere);
     }
-    public T getModel(ICondition condition,IConditionCompose iConditionCompose) {
+    public T getModel(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return getModel(queryWhere);
     }
 
-    public Map<String, Object> getMap(ICondition condition,IConditionCompose iConditionCompose) {
+    public Map<String, Object> getMap(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return getMap(queryWhere);
     }
 
     //</editor-fold>
     //<editor-fold desc="query object list">
-    public List<T> query(ICondition condition,IConditionCompose iConditionCompose) {
+    public List<T> query(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return query(queryWhere);
     }
 
-    public List<Map<String, Object>> queryMap(ICondition condition,IConditionCompose iConditionCompose) {
+    public List<Map<String, Object>> queryMap(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return queryMap(queryWhere);
     }
 
     //</editor-fold>
     //<editor-fold desc="query object page">
-    public Page<T> pageQuery(Pageable pageable, ICondition condition,IConditionCompose iConditionCompose) {
+    public Page<T> pageQuery(Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQuery(pageable, queryWhere);
     }
-    public Page<T> pageQuery(int pageNumber, int pageSize, ICondition condition,IConditionCompose iConditionCompose) {
+    public Page<T> pageQuery(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQuery(pageNumber,pageSize,queryWhere);
     }
-    public Page<Map<String, Object>> pageQueryMap(Pageable pageable, ICondition condition,IConditionCompose iConditionCompose) {
+    public Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQueryMap(pageable, queryWhere);
     }
-    public Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, ICondition condition,IConditionCompose iConditionCompose) {
+    public Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
         Pageable pageable=PageRequest.of(pageNumber,pageSize);
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQueryMap(pageable,queryWhere);

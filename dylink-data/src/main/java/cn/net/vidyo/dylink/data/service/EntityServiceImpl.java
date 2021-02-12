@@ -1,12 +1,6 @@
 package cn.net.vidyo.dylink.data.service;
 
-import cn.net.vidyo.dylink.common.CommonEnumCodes;
-import cn.net.vidyo.dylink.common.Result;
 import cn.net.vidyo.dylink.data.jpa.CommonJpaRepository;
-import cn.net.vidyo.dylink.util.ObjectUtil;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,114 +10,94 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
 
     protected abstract DAO getEntityDao();
 
-
-    @Deprecated
-    public List<T> findByCondition(T t, Object... params) {
-        return null;
+    @Override
+    public int updateStatusById(ID id, Object value) {
+        return getEntityDao().updateStatusById(id,value);
     }
 
-    @Deprecated
-    public List<T> pageByCondition(T t, Object... params) {
-        return null;
+    @Override
+    public int updateHiddenById(ID id, Object value) {
+        return getEntityDao().updateHiddenById(id,value);
     }
 
-    @Deprecated
-    public List<ID> findIdsByCondition(T t, Object... params) {
-        return null;
+    @Override
+    public int deleteByIds(Iterable<ID> ids) {
+        return getEntityDao().deleteByIds(ids);
     }
 
-    @Deprecated
-    public List<ID> pageIdsByCondition(T t, Object... params) {
-        return null;
+    @Override
+    public int deleteByIds(ID... ids) {
+        return getEntityDao().deleteByIds(ids);
     }
 
+    @Override
     public T getById(ID id) {
         return getEntityDao().getById(id);
     }
 
+    @Override
+    public ID getIdByEntity(T t) {
+        return getEntityDao().getIdByEntity(t);
+    }
+
+    @Override
+    public T getByEntityId(T t) {
+        return getEntityDao().getByEntityId(t);
+    }
+
+    @Override
     public int truncateParmeryKey() {
         return getEntityDao().truncateParmeryKey();
     }
 
-    public void deleteAll() {
-        getEntityDao().deleteAll();
+    @Override
+    public int dropTable() {
+        return getEntityDao().dropTable();
     }
 
+    @Override
     public String getNameById(ID id) {
         return getEntityDao().getNameById(id);
     }
 
+    @Override
+    public String getIdKeyById(ID id) {
+        return getEntityDao().getIdKeyById(id);
+    }
+
+    @Override
+    public String getCodeById(ID id) {
+        return getEntityDao().getCodeById(id);
+    }
+
+    @Override
     public List<T> findByIds(List<ID> ids) {
         return getEntityDao().findByIds(ids);
     }
 
+    @Override
     public List<T> findByIds(ID[] ids) {
         return getEntityDao().findByIds(ids);
     }
 
-    public List<T> findAll() {
-        return getEntityDao().findAll();
+    @Override
+    public <S extends T> Iterable<S> batchUpdate(Iterable<S> var1) {
+        return getEntityDao().batchUpdate(var1);
     }
 
-    public Page<T> findAll(Pageable pageable) {
-        return getEntityDao().findAll(pageable);
+    @Override
+    public <S extends T> S save(S entity) {
+        return getEntityDao().save(entity);
     }
 
-    public Page<T> findAll(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return getEntityDao().findAll(pageable);
+    @Override
+    public <S extends T> S saveAndFlush(S entity) {
+        return getEntityDao().saveAndFlush(entity);
     }
 
-    //long hiddenByIdIn(boolean hidden,Iterable<ID> ids);
-    public long deleteByIdIn(Iterable<ID> ids) {
-        return getEntityDao().deleteByIds(ids);
+    @Override
+    public <S extends T> Iterable<S> batchSave(Iterable<S> var1) {
+        return getEntityDao().batchSave(var1);
     }
-
-    public T save(T t) {
-        return getEntityDao().save(t);
-    }
-
-    public void deleteById(ID id) {
-        getEntityDao().deleteById(id);
-    }
-//    public Result add1(T t) {
-//        T save = getEntityDao().save(t);
-//        if (save == null) {
-//            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
-//        }
-//        return Result.ok(save);
-//    }
-
-//    public Result update1(T entity) {
-//        T model = getEntityDao().getByEntityId(entity);
-//        if (model == null) {
-//            return Result.fail(CommonEnumCodes.NOT_EXIST);
-//        }
-//        model = ObjectUtil.copyPropertiesByNotDefaultValue(entity, model);
-//        model = convertEntityOfUpdate(entity, model);
-//        T save = getEntityDao().save(model);
-//        if (save == null) {
-//            return Result.fail(CommonEnumCodes.DB_ACCESS_EXCEPTION);
-//        }
-//        return Result.ok(save);
-//    }
-//
-//    protected T convertEntityOfUpdate(T source, T target) {
-//        return target;
-//    }
-//
-//    public Result save1(T t) {
-//        T entity = getEntityDao().getByEntityId(t);
-//        if (entity == null) {
-//            return add1(t);
-//        }
-//        return update1(t);
-//    }
-//
-//    public Result deleteById1(ID id) {
-//        getEntityDao().deleteById(id);
-//        return Result.ok();
-//    }
-
 
 }

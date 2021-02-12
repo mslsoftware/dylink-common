@@ -1,10 +1,6 @@
 package cn.net.vidyo.dylink.data.domain;
 
-import cn.net.vidyo.dylink.data.jpa.SqlEQ;
+import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
 
 public interface Condition {
-    String getName();
-    SqlEQ getOperator();
-    Object getValue();
-
 }

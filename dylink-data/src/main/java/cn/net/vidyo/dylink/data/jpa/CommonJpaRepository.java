@@ -1,22 +1,13 @@
 package cn.net.vidyo.dylink.data.jpa;
 
-import cn.net.vidyo.dylink.common.Result;
-import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
-import cn.net.vidyo.dylink.util.ObjectUtil;
-import org.hibernate.query.internal.NativeQueryImpl;
-import org.hibernate.transform.Transformers;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.lang.Nullable;
 import cn.net.vidyo.dylink.data.domain.Condition;
+import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.Query;
 import java.io.Serializable;
 import java.util.*;
 
@@ -131,23 +122,23 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     //<editor-fold desc="query condition">
 
     //<editor-fold desc="query object">
-    Object getColumn(String columnName,ICondition condition,IConditionCompose iConditionCompose);
-    T getModel(ICondition condition,IConditionCompose iConditionCompose);
+    Object getColumn(String columnName, Condition condition, ConditionCompose iConditionCompose);
+    T getModel(Condition condition, ConditionCompose iConditionCompose);
 
-    Map<String, Object> getMap(ICondition condition,IConditionCompose iConditionCompose);
+    Map<String, Object> getMap(Condition condition, ConditionCompose iConditionCompose);
 
     //</editor-fold>
     //<editor-fold desc="query object list">
-    List<T> query(ICondition condition,IConditionCompose iConditionCompose);
+    List<T> query(Condition condition, ConditionCompose iConditionCompose);
 
-    List<Map<String, Object>> queryMap(ICondition condition,IConditionCompose iConditionCompose);
+    List<Map<String, Object>> queryMap(Condition condition, ConditionCompose iConditionCompose);
 
     //</editor-fold>
     //<editor-fold desc="query object page">
-    Page<T> pageQuery(Pageable pageable, ICondition condition,IConditionCompose iConditionCompose);
-    Page<T> pageQuery(int pageNumber, int pageSize, ICondition condition,IConditionCompose iConditionCompose);
-    Page<Map<String, Object>> pageQueryMap(Pageable pageable, ICondition condition,IConditionCompose iConditionCompose);
-    Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, ICondition condition,IConditionCompose iConditionCompose) ;
+    Page<T> pageQuery(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
+    Page<T> pageQuery(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose);
+    Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
+    Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) ;
 
     //</editor-fold>
     //</editor-fold>
