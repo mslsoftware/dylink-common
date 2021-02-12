@@ -166,16 +166,16 @@ public class QueryWhere {
     public QueryWhere addLikeWhere(SqlLogic logic, String columnName, Object value, SqlLike pattern) {
         StringBuilder sql = new StringBuilder();
         sql.append(columnName);
-        sql.append(" LIKE ");
+        sql.append(" LIKE ? ");
         switch (pattern){
             case LIKE_PREFIX:
-                sql.append("'%?'");
+                value="%"+value;
                 break;
             case LIKE_POSTFIX:
-                sql.append("'?%'");
+                value=value+"%";
                 break;
             case LIKE_KEYWORD:
-                sql.append("'%?%'");
+                value="%"+value+"%";
                 break;
         }
         return linkWhere(logic, sql.toString(),value);

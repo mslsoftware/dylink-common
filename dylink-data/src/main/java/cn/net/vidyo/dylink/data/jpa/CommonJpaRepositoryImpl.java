@@ -423,8 +423,8 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     public int executeSql(String sql,Object ... params){
         Query query = entityManager.createNativeQuery(sql);
         if (params != null) {
-            for (int index = 0; index < params.length; index++) {
-                query.setParameter(index, params[index]);
+            for (int index = 1; index <= params.length; index++) {
+                query.setParameter(index, params[index-1]);
             }
         }
         return query.executeUpdate();
@@ -443,21 +443,39 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     public List<T> queryBySql(String sql,Object ... params)
     {
+        sql=converToParamIndex(sql);
         Query query = entityManager.createNativeQuery(sql);
         if (params != null) {
-            for (int index = 0; index < params.length; index++) {
-                query.setParameter(index, params[index]);
+            for (int index = 1; index <= params.length; index++) {
+                query.setParameter(index, params[index-1]);
             }
         }
         List<T> resultList = query.getResultList();
         return resultList;
     }
+    String converToParamIndex(String sql){
+//        StringBuilder builder=new StringBuilder();
+//        int pos=sql.indexOf("?");
+//        int index=1;
+//        while (pos>0){
+//            builder.append(sql.substring(0,pos));
+//            builder.append("?");
+//            builder.append(index);
+//            index++;
+//            sql=sql.substring(pos+1);
+//            pos=sql.indexOf("?");
+//        }
+//        builder.append(sql);
+//        return builder.toString();
+        return sql;
+    }
 
     public List<Map<String, Object>> queryMapBySql(String sql,Object ... params) {
+        sql=converToParamIndex(sql);
         Query query = entityManager.createNativeQuery(sql);
         if (params != null) {
-            for (int index = 0; index < params.length; index++) {
-                query.setParameter(index, params[index]);
+            for (int index = 1; index <= params.length; index++) {
+                query.setParameter(index, params[index-1]);
             }
         }
         List<T> resultList = query.getResultList();
@@ -469,10 +487,11 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     public Page<T> pageBySql(Pageable pageable, String sql,Object ... params)
     {
+        sql=converToParamIndex(sql);
         Query query = entityManager.createNativeQuery(sql);
         if (params != null) {
-            for (int index = 0; index < params.length; index++) {
-                query.setParameter(index, params[index]);
+            for (int index = 1; index <= params.length; index++) {
+                query.setParameter(index, params[index-1]);
             }
         }
         List<T> resultList = query.getResultList();
@@ -484,10 +503,11 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     public Page<Map<String, Object>> pageMapBySql(Pageable pageable,String sql,Object ... params) {
+        sql=converToParamIndex(sql);
         Query query = entityManager.createNativeQuery(sql);
         if (params != null) {
-            for (int index = 0; index < params.length; index++) {
-                query.setParameter(index, params[index]);
+            for (int index = 1; index <= params.length; index++) {
+                query.setParameter(index, params[index-1]);
             }
         }
         List<T> resultList = query.getResultList();
@@ -532,12 +552,16 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     String buildUpdateSql(Map<String,Object> columnNameValues, String where) {
         StringBuilder kvs = new StringBuilder();
+        int index=1;
         for (String key : columnNameValues.keySet()) {
             if(kvs.length()>0){
                 kvs.append(",");
             }
             kvs.append(key);
-            kvs.append(" =? ");
+            kvs.append(" =?");
+//            kvs.append(index);
+            kvs.append(" ");
+            index++;
         }
         return buildUpdateSql(kvs.toString(),where);
     }
