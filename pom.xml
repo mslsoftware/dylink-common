@@ -11,6 +11,7 @@
     <modules>
         <module>dylink-common</module>
         <module>dylink-data</module>
+        <module>examples</module>
     </modules>
 
     <build>

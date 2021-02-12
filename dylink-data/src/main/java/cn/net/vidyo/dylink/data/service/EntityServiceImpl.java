@@ -4,6 +4,9 @@ import cn.net.vidyo.dylink.common.CommonEnumCodes;
 import cn.net.vidyo.dylink.common.Result;
 import cn.net.vidyo.dylink.data.jpa.CommonJpaRepository;
 import cn.net.vidyo.dylink.util.ObjectUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,19 +18,22 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
 
 
     @Deprecated
-    public List<T> findByCondition(T t,Object... params){
+    public List<T> findByCondition(T t, Object... params) {
         return null;
     }
+
     @Deprecated
-    public List<T> pageByCondition(T t,Object... params){
+    public List<T> pageByCondition(T t, Object... params) {
         return null;
     }
+
     @Deprecated
-    public List<ID> findIdsByCondition(T t,Object... params){
+    public List<ID> findIdsByCondition(T t, Object... params) {
         return null;
     }
+
     @Deprecated
-    public List<ID> pageIdsByCondition(T t,Object... params){
+    public List<ID> pageIdsByCondition(T t, Object... params) {
         return null;
     }
 
@@ -35,10 +41,11 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
         return getEntityDao().getById(id);
     }
 
-    public int truncateParmeryKey(){
+    public int truncateParmeryKey() {
         return getEntityDao().truncateParmeryKey();
     }
-    public void deleteAll(){
+
+    public void deleteAll() {
         getEntityDao().deleteAll();
     }
 
@@ -54,16 +61,29 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
         return getEntityDao().findByIds(ids);
     }
 
-    //long hiddenByIdIn(boolean hidden,Iterable<ID> ids);
-    public long deleteByIdIn(Iterable<ID> ids) {
-        return getEntityDao().deleteByIdIn(ids);
+    public List<T> findAll() {
+        return getEntityDao().findAll();
     }
 
-    public T save(T t){
+    public Page<T> findAll(Pageable pageable) {
+        return getEntityDao().findAll(pageable);
+    }
+
+    public Page<T> findAll(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return getEntityDao().findAll(pageable);
+    }
+
+    //long hiddenByIdIn(boolean hidden,Iterable<ID> ids);
+    public long deleteByIdIn(Iterable<ID> ids) {
+        return getEntityDao().deleteByIds(ids);
+    }
+
+    public T save(T t) {
         return getEntityDao().save(t);
     }
 
-    public void deleteById(ID id){
+    public void deleteById(ID id) {
         getEntityDao().deleteById(id);
     }
 //    public Result add1(T t) {
