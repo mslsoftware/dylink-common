@@ -63,6 +63,20 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return deleteByWhere(new QueryWhere().addInWhere("id",ids));
     }
 
+    @Override
+    public void deleteAll() {
+        deleteByWhere(new QueryWhere());
+    }
+
+    @Override
+    public void deleteAll(Iterable<? extends T> entities) {
+        List<ID> ids = new ArrayList<>();
+        for (T entity : entities) {
+            ids.add(getIdByEntity(entity));
+        }
+        deleteByWhere(new QueryWhere().addInWhere("id",ids));
+    }
+
     //</editor-fold>
     //<editor-fold desc="Query">
     //<editor-fold desc="get entity">
@@ -72,7 +86,9 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         if (!optional.isPresent()) {
             return null;
         }
-        return optional.get();
+        T t = optional.get();
+        invokeEvent(t,Event.PostLoad);
+        return t;
     }
 
     public ID getIdByEntity(T t) {
@@ -85,24 +101,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return getById(id);
     }
 
-    @Transactional(readOnly = false)
-    @Override
-    public int truncateParmeryKey() {
-        StringBuilder sql = new StringBuilder();
-        sql.append("TRUNCATE TABLE ");
-        sql.append(getTableName());
-        Query query = entityManager.createNativeQuery(sql.toString());
-        return query.executeUpdate();
-    }
 
-    @Transactional(readOnly = false)
-    public int dropTable() {
-        StringBuilder sql = new StringBuilder();
-        sql.append("DROP TABLE ");
-        sql.append(getTableName());
-        Query query = entityManager.createNativeQuery(sql.toString());
-        return query.executeUpdate();
-    }
 
 
     //</editor-fold>
@@ -176,7 +175,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     @Transactional
     public int increaseColumn(String columName,int delta,QueryWhere where){
-        return increaseColumn(columName, delta, where.getWhere(),where.getParams());
+        return increaseColumn(columName, delta, where.getWhere(),where.getParams().toArray());
     }
     @Transactional
     public int updateColumn(String columName,Object value,String where,Object... params){
@@ -195,7 +194,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     @Transactional
     public int updateColumns(Map<String,Object> columnNameValues,QueryWhere where){
         String sql = buildUpdateSql(columnNameValues, where.getWhere());
-        return executeSql(sql,where.getParams());
+        return executeSql(sql,where.getParams().toArray());
     }
     @Transactional
     public <S extends T> Iterable<S> batchUpdate(Iterable<S> var1) {
@@ -271,7 +270,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     @Transactional
     public int deleteByWhere(QueryWhere where) {
         String sql=buildDeleteSql(where.getWhere());
-        return executeSql(sql,where.getParams());
+        return executeSql(sql,where.getParams().toArray());
     }
 
     //</editor-fold>
@@ -291,24 +290,24 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     public T getModel(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return getBySql(sql,where.getParams());
+        return getBySql(sql,where.getParams().toArray());
     }
 
     public Map<String, Object> getMap(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return getMapBySql(sql,where.getParams());
+        return getMapBySql(sql,where.getParams().toArray());
     }
 
     //</editor-fold>
     //<editor-fold desc="query object list">
     public List<T> query(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryBySql(sql,where.getParams());
+        return queryBySql(sql,where.getParams().toArray());
     }
 
     public List<Map<String, Object>> queryMap(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryMapBySql(sql,where.getParams());
+        return queryMapBySql(sql,where.getParams().toArray());
     }
 
     //</editor-fold>
@@ -330,7 +329,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     public Page<Map<String, Object>> pageQueryMap(Pageable pageable, QueryWhere where) {
         String sql = buildQuerySql(where.getSelect(), where.getWhere());
-        return pageQueryMap(pageable,sql,where.getParams());
+        return pageQueryMap(pageable,sql,where.getParams().toArray());
     }
     public Page<Map<String, Object>> pageSelectQueryMap(Pageable pageable,String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
@@ -402,6 +401,25 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     //</editor-fold>
     //</editor-fold>
     //<editor-fold desc="sql">
+    @Transactional(readOnly = false)
+    @Override
+    public int truncateParmeryKey() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("TRUNCATE TABLE ");
+        sql.append(getTableName());
+        Query query = entityManager.createNativeQuery(sql.toString());
+        return query.executeUpdate();
+    }
+
+    @Transactional(readOnly = false)
+    public int dropTable() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("DROP TABLE ");
+        sql.append(getTableName());
+        Query query = entityManager.createNativeQuery(sql.toString());
+        return query.executeUpdate();
+    }
+
     public int executeSql(String sql,Object ... params){
         Query query = entityManager.createNativeQuery(sql);
         if (params != null) {

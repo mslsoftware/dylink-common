@@ -31,6 +31,16 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
     }
 
     @Override
+    public void deleteAll() {
+        getEntityDao().deleteAll();
+    }
+
+    @Override
+    public void deleteAll(Iterable<? extends T> var1) {
+        getEntityDao().deleteAll(var1);
+    }
+
+    @Override
     public T getById(ID id) {
         return getEntityDao().getById(id);
     }

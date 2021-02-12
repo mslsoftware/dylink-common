@@ -72,6 +72,8 @@ public interface EntityService<DAO extends CommonJpaRepository<T, ID>, T, ID ext
     <S extends T> Iterable<S> batchSave(Iterable<S> var1);
     //</editor-fold>
     //<editor-fold desc="delete">
+    void deleteAll();
+    void deleteAll(Iterable<? extends T> var1);
     //</editor-fold>
     //<editor-fold desc="query">
 

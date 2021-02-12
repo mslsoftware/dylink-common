@@ -8,6 +8,15 @@ import javax.persistence.Entity;
 public class User extends CreateUpdateTimeHiddenIntModel {
     String name="";
     int age=0;
+    int status=0;
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
 
     public int getAge() {
         return age;

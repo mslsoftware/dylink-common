@@ -169,13 +169,13 @@ public class QueryWhere {
         sql.append(" LIKE ");
         switch (pattern){
             case LIKE_PREFIX:
-                sql.append("%?");
+                sql.append("'%?'");
                 break;
             case LIKE_POSTFIX:
-                sql.append("?%");
+                sql.append("'?%'");
                 break;
             case LIKE_KEYWORD:
-                sql.append("%?%");
+                sql.append("'%?%'");
                 break;
         }
         return linkWhere(logic, sql.toString(),value);
