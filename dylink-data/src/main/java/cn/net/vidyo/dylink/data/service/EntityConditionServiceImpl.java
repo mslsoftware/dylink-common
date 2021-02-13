@@ -28,7 +28,7 @@ public abstract class EntityConditionServiceImpl<
     }
 
     @Override
-    public Map<String, Object> getMap(Condition condition) {
+    public Map getMap(Condition condition) {
         return getEntityDao().getMap(condition,this);
     }
 
@@ -38,7 +38,7 @@ public abstract class EntityConditionServiceImpl<
     }
 
     @Override
-    public List<Map<String, Object>> queryMap(Condition condition) {
+    public List<Map> queryMap(Condition condition) {
         return getEntityDao().queryMap(condition,this);
     }
 
@@ -53,12 +53,12 @@ public abstract class EntityConditionServiceImpl<
     }
 
     @Override
-    public Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition) {
+    public Page<Map> pageQueryMap(Pageable pageable, Condition condition) {
         return getEntityDao().pageQueryMap(pageable,condition,this);
     }
 
     @Override
-    public Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition) {
+    public Page<Map> pageQueryMap(int pageNumber, int pageSize, Condition condition) {
         return getEntityDao().pageQueryMap(pageNumber,pageSize,condition,this);
     }
 }

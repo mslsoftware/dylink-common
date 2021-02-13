@@ -196,18 +196,18 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     @Transactional
     public int updateColumn(String columName, Object value, QueryWhere where) {
-        Map<String, Object> columnNameValues = new HashMap<>();
+        Map columnNameValues = new HashMap<>();
         columnNameValues.put(columName, value);
         return updateColumns(columnNameValues, where);
     }
 
     @Transactional
-    public int updateColumns(Map<String, Object> columnNameValues, String where, Object... params) {
+    public int updateColumns(Map columnNameValues, String where, Object... params) {
         return updateColumns(columnNameValues, new QueryWhere(where, params));
     }
 
     @Transactional
-    public int updateColumns(Map<String, Object> columnNameValues, QueryWhere where) {
+    public int updateColumns(Map columnNameValues, QueryWhere where) {
         String sql = buildUpdateSql(columnNameValues, where.getWhere());
         return executeSql(sql, where.getParams().toArray());
     }
@@ -302,7 +302,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         if (where.getSelect().length() == 1) {
             where.setSelect(columnName);
         }
-        Map<String, Object> map = getMap(where);
+        Map map = getMap(where);
         if (map == null) return null;
         if (map.containsKey(columnName)) {
             return map.get(columnName);
@@ -315,7 +315,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return getBySql(sql, where.getParams().toArray());
     }
 
-    public Map<String, Object> getMap(QueryWhere where) {
+    public Map getMap(QueryWhere where) {
         String sql = buildQuerySql(where);
         return getMapBySql(sql, where.getParams().toArray());
     }
@@ -327,7 +327,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return queryBySql(sql, where.getParams().toArray());
     }
 
-    public List<Map<String, Object>> queryMap(QueryWhere where) {
+    public List<Map> queryMap(QueryWhere where) {
         String sql = buildQuerySql(where);
         return queryMapBySql(sql, where.getParams().toArray());
     }
@@ -348,16 +348,16 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return pageBySql(pageable, sql, params);
     }
 
-    public Page<Map<String, Object>> pageQueryMap(Pageable pageable, String where, Object... params) {
+    public Page<Map> pageQueryMap(Pageable pageable, String where, Object... params) {
         return pageQueryMap(pageable, new QueryWhere(where, params));
     }
 
-    public Page<Map<String, Object>> pageQueryMap(Pageable pageable, QueryWhere where) {
+    public Page<Map> pageQueryMap(Pageable pageable, QueryWhere where) {
         String sql = buildQuerySql(where.getSelect(), where.getWhere());
         return pageQueryMap(pageable, sql, where.getParams().toArray());
     }
 
-    public Page<Map<String, Object>> pageSelectQueryMap(Pageable pageable, String select, String where, Object... params) {
+    public Page<Map> pageSelectQueryMap(Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
         return pageMapBySql(pageable, sql, params);
     }
@@ -390,7 +390,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return getModel(queryWhere);
     }
 
-    public Map<String, Object> getMap(Condition condition, ConditionCompose iConditionCompose) {
+    public Map getMap(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return getMap(queryWhere);
     }
@@ -402,7 +402,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return query(queryWhere);
     }
 
-    public List<Map<String, Object>> queryMap(Condition condition, ConditionCompose iConditionCompose) {
+    public List<Map> queryMap(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return queryMap(queryWhere);
     }
@@ -419,12 +419,12 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return pageQuery(pageNumber, pageSize, queryWhere);
     }
 
-    public Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
+    public Page<Map> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQueryMap(pageable, queryWhere);
     }
 
-    public Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
+    public Page<Map> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQueryMap(pageable, queryWhere);
@@ -441,8 +441,8 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return list.get(0);
     }
 
-    public Map<String, Object> getMapBySql(String sql, Object... params) {
-        List<Map<String, Object>> maps = queryMapBySql(sql, params);
+    public Map getMapBySql(String sql, Object... params) {
+        List<Map> maps = queryMapBySql(sql, params);
         if (maps == null || maps.size() == 0) return null;
         return maps.get(0);
     }
@@ -490,7 +490,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return executeQueryBySql(entityClass,sql,params);
     }
 
-    public List<Map<String, Object>> queryMapBySql(String sql, Object... params) {
+    public List<Map> queryMapBySql(String sql, Object... params) {
         sql = converToParamIndex(sql);
 //        Query query = entityManager.createQuery(sql);
 //        if (params != null) {
@@ -500,7 +500,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        }
 //        List<T> resultList = query.getResultList();
 //        @SuppressWarnings("unchecked")
-//        List<Map<String, Object>> list = query.unwrap(NativeQueryImpl.class)
+//        List<Map> list = query.unwrap(NativeQueryImpl.class)
 //                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
 //        return list;
         return executeQueryMapBySql(sql,params);
@@ -528,7 +528,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        List<BackstageUserListDTO> list = query.list();
     }
 
-    public Page<Map<String, Object>> pageMapBySql(Pageable pageable, String sql, Object... params) {
+    public Page<Map> pageMapBySql(Pageable pageable, String sql, Object... params) {
         sql = converToParamIndex(sql);
 //        Query query = entityManager.createQuery(sql);
 //        //query.unwrap(SQLQuery.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
@@ -543,9 +543,9 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        query.setMaxResults(pageable.getPageSize());
 //
 //        @SuppressWarnings("unchecked")
-//        List<Map<String, Object>> list = query.unwrap(NativeQueryImpl.class)
+//        List<Map> list = query.unwrap(NativeQueryImpl.class)
 //                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-//        Page<Map<String, Object>> result = new PageImpl<Map<String, Object>>(list, pageable, totalRows);
+//        Page<Map> result = new PageImpl<Map>(list, pageable, totalRows);
 //        return result;
         return executePageQueryMapBySql(pageable, sql,params);
     }
@@ -581,10 +581,10 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return sql.toString();
     }
 
-    String buildUpdateSql(Map<String, Object> columnNameValues, String where) {
+    String buildUpdateSql(Map columnNameValues, String where) {
         StringBuilder kvs = new StringBuilder();
         int index = 1;
-        for (String key : columnNameValues.keySet()) {
+        for (Object key : columnNameValues.keySet()) {
             if (kvs.length() > 0) {
                 kvs.append(",");
             }
@@ -704,7 +704,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return new PageImpl<>(result,page,totalRecord);
     }
 
-    List<Map<String, Object>> executeQueryMapBySql(
+    List<Map> executeQueryMapBySql(
             String sql,
             Object ... params) {
         javax.persistence.Query query = entityManager.createNativeQuery(sql);
@@ -715,13 +715,13 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
                 index++;
             }
         }
-        List<Map<String, Object>> result = query
+        List<Map> result = query
                 .unwrap(SQLQuery.class)
                 .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
                 .list();
         return result;
     }
-    Page<Map<String, Object>> executePageQueryMapBySql(
+    Page<Map> executePageQueryMapBySql(
             Pageable page,
             String sql,
             Object ... params) {
@@ -739,7 +739,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
             }
         }
         long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
-        List<Map<String, Object>> result = totalRecord == 0 ? new ArrayList<>(0) :
+        List<Map> result = totalRecord == 0 ? new ArrayList<>(0) :
                 pageQuery
                         .setFirstResult((int)page.getOffset())
                         .setMaxResults(page.getPageSize())

@@ -97,12 +97,12 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     //<editor-fold desc="query object">
     Object getColumn(String columnName,QueryWhere where);
     T getModel(QueryWhere where);
-    Map<String, Object> getMap(QueryWhere where);
+    Map getMap(QueryWhere where);
 
     //</editor-fold>
     //<editor-fold desc="query object list">
     List<T> query(QueryWhere where);
-    List<Map<String, Object>> queryMap(QueryWhere where);
+    List<Map> queryMap(QueryWhere where);
 
     //</editor-fold>
     //<editor-fold desc="query object page">
@@ -110,9 +110,9 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     Page<T> pageQuery(Pageable pageable, QueryWhere where);
     Page<T> pageSelectQuery(Pageable pageable, String select, String where, Object... params);
 
-    Page<Map<String, Object>> pageQueryMap(Pageable pageable, String where, Object... params) ;
-    Page<Map<String, Object>> pageQueryMap(Pageable pageable, QueryWhere where) ;
-    Page<Map<String, Object>> pageSelectQueryMap(Pageable pageable,String select, String where, Object... params) ;
+    Page<Map> pageQueryMap(Pageable pageable, String where, Object... params) ;
+    Page<Map> pageQueryMap(Pageable pageable, QueryWhere where) ;
+    Page<Map> pageSelectQueryMap(Pageable pageable,String select, String where, Object... params) ;
 
     Page<T> pageQuery(int pageNumber, int pageSize, String where, Object... params);
     Page<T> pageQuery(int pageNumber, int pageSize,QueryWhere where);
@@ -125,20 +125,20 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     Object getColumn(String columnName, Condition condition, ConditionCompose iConditionCompose);
     T getModel(Condition condition, ConditionCompose iConditionCompose);
 
-    Map<String, Object> getMap(Condition condition, ConditionCompose iConditionCompose);
+    Map getMap(Condition condition, ConditionCompose iConditionCompose);
 
     //</editor-fold>
     //<editor-fold desc="query object list">
     List<T> query(Condition condition, ConditionCompose iConditionCompose);
 
-    List<Map<String, Object>> queryMap(Condition condition, ConditionCompose iConditionCompose);
+    List<Map> queryMap(Condition condition, ConditionCompose iConditionCompose);
 
     //</editor-fold>
     //<editor-fold desc="query object page">
     Page<T> pageQuery(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
     Page<T> pageQuery(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose);
-    Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
-    Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) ;
+    Page<Map> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
+    Page<Map> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) ;
 
     //</editor-fold>
     //</editor-fold>
@@ -149,15 +149,15 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     int executeSql(String sql,Object ... params);
     T getBySql(String sql,Object ... params);
 
-    Map<String, Object> getMapBySql(String sql,Object ... params);
+    Map getMapBySql(String sql,Object ... params);
 
     List<T> queryBySql(String sql,Object ... params);
 
-    List<Map<String, Object>> queryMapBySql(String sql,Object ... params);
+    List<Map> queryMapBySql(String sql,Object ... params);
 
     Page<T> pageBySql(Pageable pageable, String sql,Object ... params);
 
-    Page<Map<String, Object>> pageMapBySql(Pageable pageable,String sql,Object ... params);
+    Page<Map> pageMapBySql(Pageable pageable,String sql,Object ... params);
     //</editor-fold>
     //</editor-fold>
 
@@ -184,7 +184,7 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
 //     * @param params   key表示jpql中参数变量名，value表示该参数变量值
 //     * @return 返回执行后受影响的数据个数
 //     */
-//    int executeUpdate(String qlString, Map<String, Object> params);
+//    int executeUpdate(String qlString, Map params);
 //
 //    /**
 //     * 执行ql语句，可以是更新或者删除操作
@@ -216,7 +216,7 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
 //     */
 //    List<T> findAll(String qlString, Object... values);
 //
-//    List<T> findAll(String qlString, Map<String, Object> params);
+//    List<T> findAll(String qlString, Map params);
 //
 //    List<T> findAll(@Nullable List<Condition> conditions);
 //

@@ -22,20 +22,20 @@ public interface EntityConditionService<
     Object getColumn(String columnName, Condition condition);
     T getModel(Condition condition);
 
-    Map<String, Object> getMap(Condition condition);
+    Map getMap(Condition condition);
 
     //</editor-fold>
     //<editor-fold desc="query object list">
     List<T> query(Condition condition);
 
-    List<Map<String, Object>> queryMap(Condition condition);
+    List<Map> queryMap(Condition condition);
 
     //</editor-fold>
     //<editor-fold desc="query object page">
     Page<T> pageQuery(Pageable pageable, Condition condition);
     Page<T> pageQuery(int pageNumber, int pageSize, Condition condition);
-    Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition);
-    Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition) ;
+    Page<Map> pageQueryMap(Pageable pageable, Condition condition);
+    Page<Map> pageQueryMap(int pageNumber, int pageSize, Condition condition) ;
 
     //</editor-fold>
     //</editor-fold>
