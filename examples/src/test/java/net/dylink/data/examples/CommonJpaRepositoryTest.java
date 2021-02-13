@@ -23,9 +23,9 @@ public class CommonJpaRepositoryTest {
 
     @Test
     public void test(){
-        userService.deleteAll();
-        userService.truncateParmeryKey();
-        insert();
+//        userService.deleteAll();
+//        userService.truncateParmeryKey();
+//        insert();
 
         UserCondition userCondition=new UserCondition();
         userCondition.setName("马");
@@ -35,6 +35,9 @@ public class CommonJpaRepositoryTest {
             userCondition.setId(user.getId());
         }
         users = userService.query(userCondition);
+
+        List<User> byAge = userService.findByAge(1, 5);
+
         System.out.println(users);
         //userService.deleteAll(users);
     }

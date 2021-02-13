@@ -12,6 +12,7 @@ import net.dylink.data.examples.data.service.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class UserServiceImpl extends EntityConditionServiceImpl<UserCondition,UserDao, User,Integer> implements UserService {
@@ -32,5 +33,14 @@ public class UserServiceImpl extends EntityConditionServiceImpl<UserCondition,Us
             sql.addLikeWhere("name",condition.getName(), SqlLike.LIKE_KEYWORD);
         }
         return sql;
+    }
+
+
+    @Override
+    public List<User> findByAge(int minAge, int maxAge) {
+        QueryWhere where=new QueryWhere();
+        where.addThanWhere("age",minAge,SqlThan.THAN_GREATER_EQUAL)
+        .addThanWhere("age",maxAge,SqlThan.THAN_LESS_EQUAL);
+        return getEntityDao().query(where);
     }
 }
