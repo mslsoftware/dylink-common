@@ -203,6 +203,18 @@ public class ValueUtil {
         return Boolean.valueOf(value);
     }
 
+
+    public static char toChar(Object data) {
+        return toChar(data, '0');
+    }
+
+    public static char toChar(Object data, char defaultValue) {
+        String value = toString(data, "");
+        if (value == "")
+            return defaultValue;
+        return value.charAt(0);
+    }
+
     public static byte toByte(Object data) {
         byte val = 0;
         return toByte(data, val);

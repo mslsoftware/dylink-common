@@ -143,8 +143,8 @@ public class QueryWhere {
             }
             sql.append("?");
         }
-        sql.indexOf(" IN (",0);
-        sql.indexOf(columnName,0);
+        sql.insert(0," IN (");
+        sql.insert(0,columnName);
         sql.append(")");
         return linkWhere(logic, sql.toString(),values.toArray());
     }
@@ -157,8 +157,8 @@ public class QueryWhere {
             }
             sql.append("?");
         }
-        sql.indexOf(" IN (",0);
-        sql.indexOf(columnName,0);
+        sql.insert(0," IN (");
+        sql.insert(0,columnName);
         sql.append(")");
         return linkWhere(logic, sql.toString(),values);
     }

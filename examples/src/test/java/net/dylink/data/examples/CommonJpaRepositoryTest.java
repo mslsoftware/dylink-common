@@ -23,14 +23,20 @@ public class CommonJpaRepositoryTest {
 
     @Test
     public void test(){
-//        userService.deleteAll();
-//        userService.truncateParmeryKey();
-//        insert();
+        userService.deleteAll();
+        userService.truncateParmeryKey();
+        insert();
 
         UserCondition userCondition=new UserCondition();
         userCondition.setName("马");
-        List<User> query = userService.query(userCondition);
-        System.out.println(query);
+        List<User> users = userService.query(userCondition);
+        if(users.size()>0){
+            User user = users.get(0);
+            userCondition.setId(user.getId());
+        }
+        users = userService.query(userCondition);
+        System.out.println(users);
+        //userService.deleteAll(users);
     }
     @Test
     public void insert(){

@@ -250,6 +250,9 @@ public class ObjectUtil {
         return fields;
     }
     public static Field getClassDeclaredFieldByFildName(Class classz,boolean mappedSuperclassSupport,String fieldName){
+        if(classz==null){
+            return null;
+        }
         Field[] fs = classz.getDeclaredFields();
         for (Field f : fs) {
             if(f.getName().equals(fieldName)){

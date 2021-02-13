@@ -2,21 +2,24 @@ package cn.net.vidyo.dylink.data.jpa;
 
 import cn.net.vidyo.dylink.data.domain.Condition;
 import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
+import cn.net.vidyo.dylink.data.jpa.support.ColumnToBean;
 import cn.net.vidyo.dylink.data.jpa.support.DefaultEntityEventCallback;
 import cn.net.vidyo.dylink.util.ObjectUtil;
+import org.hibernate.SQLQuery;
 import org.hibernate.query.internal.NativeQueryImpl;
 import org.hibernate.transform.Transformers;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.*;
 
 public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> implements EntityEventCallback, CommonJpaRepository<T, ID> {
-    static int BATCH_SIZE=10000;
+    static int BATCH_SIZE = 10000;
     private final EntityManager entityManager;
     JpaEntityInformation<T, ?> entityInformation;
     Class<T> entityClass;
@@ -28,7 +31,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         this.entityManager = entityManager;
         this.entityInformation = entityInformation;
         this.entityClass = entityInformation.getJavaType();
-        defaultEntityEventCallback=new DefaultEntityEventCallback();
+        defaultEntityEventCallback = new DefaultEntityEventCallback();
     }
 
     //<editor-fold desc="Extent">
@@ -45,22 +48,22 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     @Override
     public int updateColumnById(ID id, String fieldName, Object value) {
-        return updateColumn(fieldName,value,new QueryWhere().addIdWhere(id));
+        return updateColumn(fieldName, value, new QueryWhere().addIdWhere(id));
     }
 
     public int increaseColumnValueById(ID id, String fieldName, int delta) {
-        return increaseColumn(fieldName,delta,"id=?",id);
+        return increaseColumn(fieldName, delta, "id=?", id);
     }
 
     //</editor-fold>
     //<editor-fold desc="delete">
     @Override
     public int deleteByIds(Iterable<ID> ids) {
-        return deleteByWhere(new QueryWhere().addInWhere("id",ids));
+        return deleteByWhere(new QueryWhere().addInWhere("id", ids));
     }
 
-    public int deleteByIds(ID ... ids) {
-        return deleteByWhere(new QueryWhere().addInWhere("id",ids));
+    public int deleteByIds(ID... ids) {
+        return deleteByWhere(new QueryWhere().addInWhere("id", ids));
     }
 
     @Override
@@ -72,9 +75,10 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     public void deleteAll(Iterable<? extends T> entities) {
         List<ID> ids = new ArrayList<>();
         for (T entity : entities) {
-            ids.add(getIdByEntity(entity));
+            ID id = getIdByEntity(entity);
+            ids.add(id);
         }
-        deleteByWhere(new QueryWhere().addInWhere("id",ids));
+        deleteByWhere(new QueryWhere().addInWhere("id", ids));
     }
 
     //</editor-fold>
@@ -87,7 +91,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
             return null;
         }
         T t = optional.get();
-        invokeEvent(t,Event.PostLoad);
+        invokeEvent(t, Event.PostLoad);
         return t;
     }
 
@@ -102,14 +106,13 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
 
-
-
     //</editor-fold>
     //<editor-fold desc="get column">
     @Override
     public Object getColumnById(ID id, String fieldName) {
-        return getColumn(fieldName,new QueryWhere().addIdWhere(id));
+        return getColumn(fieldName, new QueryWhere().addIdWhere(id));
     }
+
     public String getStringColumnById(ID id, String fieldName) {
         Object value = getColumnById(id, fieldName);
         if (value == null) {
@@ -120,13 +123,15 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     @Override
     public String getNameById(ID id) {
-        return getStringColumnById(id,"name");
+        return getStringColumnById(id, "name");
     }
+
     public String getIdKeyById(ID id) {
-        return getStringColumnById(id,"idkey");
+        return getStringColumnById(id, "idkey");
     }
+
     public String getCodeById(ID id) {
-        return getStringColumnById(id,"code");
+        return getStringColumnById(id, "code");
     }
 
     //</editor-fold>
@@ -141,26 +146,31 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         List list = Arrays.asList(ids);
         return findByIds(list);
     }
-    public Page<T> pageAll(int pageNumber,int pageSize){
-        return pageAll(PageRequest.of(pageNumber,pageSize));
+
+    public Page<T> pageAll(int pageNumber, int pageSize) {
+        return pageAll(PageRequest.of(pageNumber, pageSize));
     }
-    public Page<T> pageAll(){
-        return pageAll(1,100000);
+
+    public Page<T> pageAll() {
+        return pageAll(1, 100000);
     }
-    public Page<T> pageAll(Pageable pageable){
-        return pageQuery(pageable,new QueryWhere());
+
+    public Page<T> pageAll(Pageable pageable) {
+        return pageQuery(pageable, new QueryWhere());
     }
-    public List<T> findAll(){
+
+    public List<T> findAll() {
         return query(new QueryWhere());
     }
+
     //</editor-fold>
     //</editor-fold>
     //</editor-fold>
     //<editor-fold desc="Base">
     //<editor-fold desc="update">
     @Transactional
-    public int increaseColumn(String columName,int delta,String where,Object... params){
-        StringBuilder sql= new StringBuilder();
+    public int increaseColumn(String columName, int delta, String where, Object... params) {
+        StringBuilder sql = new StringBuilder();
         sql.append(columName);
         sql.append("=");
         sql.append(columName);
@@ -171,143 +181,155 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         for (Object param : params) {
             list.add(param);
         }
-        return executeSql(sql1,list.toArray());
+        return executeSql(sql1, list.toArray());
     }
+
     @Transactional
-    public int increaseColumn(String columName,int delta,QueryWhere where){
-        return increaseColumn(columName, delta, where.getWhere(),where.getParams().toArray());
+    public int increaseColumn(String columName, int delta, QueryWhere where) {
+        return increaseColumn(columName, delta, where.getWhere(), where.getParams().toArray());
     }
+
     @Transactional
-    public int updateColumn(String columName,Object value,String where,Object... params){
-        return updateColumn(columName,value,new QueryWhere(where, params));
+    public int updateColumn(String columName, Object value, String where, Object... params) {
+        return updateColumn(columName, value, new QueryWhere(where, params));
     }
+
     @Transactional
-    public int updateColumn(String columName,Object value,QueryWhere where){
-        Map<String,Object> columnNameValues=new HashMap<>();
-        columnNameValues.put(columName,value);
-        return updateColumns(columnNameValues,where);
+    public int updateColumn(String columName, Object value, QueryWhere where) {
+        Map<String, Object> columnNameValues = new HashMap<>();
+        columnNameValues.put(columName, value);
+        return updateColumns(columnNameValues, where);
     }
+
     @Transactional
-    public int updateColumns(Map<String,Object> columnNameValues,String where,Object... params){
-        return updateColumns(columnNameValues,new QueryWhere(where, params));
+    public int updateColumns(Map<String, Object> columnNameValues, String where, Object... params) {
+        return updateColumns(columnNameValues, new QueryWhere(where, params));
     }
+
     @Transactional
-    public int updateColumns(Map<String,Object> columnNameValues,QueryWhere where){
+    public int updateColumns(Map<String, Object> columnNameValues, QueryWhere where) {
         String sql = buildUpdateSql(columnNameValues, where.getWhere());
-        return executeSql(sql,where.getParams().toArray());
+        return executeSql(sql, where.getParams().toArray());
     }
+
     @Transactional
     public <S extends T> Iterable<S> batchUpdate(Iterable<S> var1) {
         Iterator<S> iterator = var1.iterator();
         int index = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             S entity = iterator.next();
-            invokeEvent(entity,Event.PreUpdate);
+            invokeEvent(entity, Event.PreUpdate);
             entityManager.merge(entity);
-            invokeEvent(entity,Event.PostUpdate);
+            invokeEvent(entity, Event.PostUpdate);
             index++;
-            if (index % BATCH_SIZE == 0){
+            if (index % BATCH_SIZE == 0) {
                 entityManager.flush();
                 entityManager.clear();
             }
         }
-        if (index % BATCH_SIZE != 0){
+        if (index % BATCH_SIZE != 0) {
             entityManager.flush();
             entityManager.clear();
         }
         return var1;
     }
+
     //</editor-fold>
     //<editor-fold desc="insert">
     @Transactional
     public <S extends T> S save(S entity) {
         if (this.entityInformation.isNew(entity)) {
-            invokeEvent(entity,Event.PrePersist);
+            invokeEvent(entity, Event.PrePersist);
             this.entityManager.persist(entity);
-            invokeEvent(entity,Event.PostPersist);
+            invokeEvent(entity, Event.PostPersist);
             return entity;
         } else {
-            invokeEvent(entity,Event.PreUpdate);
+            invokeEvent(entity, Event.PreUpdate);
             S merge = this.entityManager.merge(entity);
-            invokeEvent(merge,Event.PostUpdate);
+            invokeEvent(merge, Event.PostUpdate);
             return merge;
         }
     }
+
     @Transactional
     public <S extends T> S saveAndFlush(S entity) {
         S result = this.save(entity);
         this.flush();
         return result;
     }
+
     @Transactional
     public <S extends T> Iterable<S> batchSave(Iterable<S> var1) {
         Iterator<S> iterator = var1.iterator();
         int index = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             S entity = iterator.next();
-            invokeEvent(entity,Event.PrePersist);
+            invokeEvent(entity, Event.PrePersist);
             entityManager.persist(entity);
-            invokeEvent(entity,Event.PostPersist);
+            invokeEvent(entity, Event.PostPersist);
             index++;
-            if (index % BATCH_SIZE == 0){
+            if (index % BATCH_SIZE == 0) {
                 entityManager.flush();
                 entityManager.clear();
             }
         }
-        if (index % BATCH_SIZE != 0){
+        if (index % BATCH_SIZE != 0) {
             entityManager.flush();
             entityManager.clear();
         }
         return var1;
     }
+
     //</editor-fold>
     //<editor-fold desc="delete">
     @Transactional
-    public int deleteByWhere(String where,Object... params) {
-        String sql=buildDeleteSql(where);
-        return executeSql(sql,params);
+    public int deleteByWhere(String where, Object... params) {
+        String sql = buildDeleteSql(where);
+        return executeSql(sql, params);
     }
+
     @Transactional
     public int deleteByWhere(QueryWhere where) {
-        String sql=buildDeleteSql(where.getWhere());
-        return executeSql(sql,where.getParams().toArray());
+        String sql = buildDeleteSql(where.getWhere());
+        return executeSql(sql, where.getParams().toArray());
     }
 
     //</editor-fold>
     //<editor-fold desc="query">
 
     //<editor-fold desc="query object">
-    public Object getColumn(String columnName,QueryWhere where) {
-        if(where.getSelect().length()==1){
+    public Object getColumn(String columnName, QueryWhere where) {
+        if (where.getSelect().length() == 1) {
             where.setSelect(columnName);
         }
         Map<String, Object> map = getMap(where);
-        if(map==null) return null;
-        if(map.containsKey(columnName)){
+        if (map == null) return null;
+        if (map.containsKey(columnName)) {
             return map.get(columnName);
         }
         return null;
     }
+
     public T getModel(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return getBySql(sql,where.getParams().toArray());
+        return getBySql(sql, where.getParams().toArray());
     }
 
     public Map<String, Object> getMap(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return getMapBySql(sql,where.getParams().toArray());
+        return getMapBySql(sql, where.getParams().toArray());
     }
 
     //</editor-fold>
     //<editor-fold desc="query object list">
     public List<T> query(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryBySql(sql,where.getParams().toArray());
+        return queryBySql(sql, where.getParams().toArray());
     }
 
     public List<Map<String, Object>> queryMap(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryMapBySql(sql,where.getParams().toArray());
+        return queryMapBySql(sql, where.getParams().toArray());
     }
 
     //</editor-fold>
@@ -315,37 +337,43 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     public Page<T> pageQuery(Pageable pageable, String where, Object... params) {
         return pageSelectQuery(pageable, "*", where, params);
     }
-    public Page<T> pageQuery(Pageable pageable, QueryWhere where){
+
+    public Page<T> pageQuery(Pageable pageable, QueryWhere where) {
         String sql = buildQuerySql(where.getSelect(), where.getWhere());
-        return pageBySql(pageable,sql,where.getParams().toArray());
+        return pageBySql(pageable, sql, where.getParams().toArray());
     }
+
     public Page<T> pageSelectQuery(Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
-        return pageBySql(pageable,sql,params);
+        return pageBySql(pageable, sql, params);
     }
 
     public Page<Map<String, Object>> pageQueryMap(Pageable pageable, String where, Object... params) {
-        return pageQueryMap(pageable, new QueryWhere(where,params));
+        return pageQueryMap(pageable, new QueryWhere(where, params));
     }
+
     public Page<Map<String, Object>> pageQueryMap(Pageable pageable, QueryWhere where) {
         String sql = buildQuerySql(where.getSelect(), where.getWhere());
-        return pageQueryMap(pageable,sql,where.getParams().toArray());
+        return pageQueryMap(pageable, sql, where.getParams().toArray());
     }
-    public Page<Map<String, Object>> pageSelectQueryMap(Pageable pageable,String select, String where, Object... params) {
+
+    public Page<Map<String, Object>> pageSelectQueryMap(Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
-        return pageMapBySql(pageable,sql,params);
+        return pageMapBySql(pageable, sql, params);
     }
 
     public Page<T> pageQuery(int pageNumber, int pageSize, String where, Object... params) {
-        return pageSelectQuery(pageNumber,pageSize,"*",where,params);
+        return pageSelectQuery(pageNumber, pageSize, "*", where, params);
     }
-    public Page<T> pageQuery(int pageNumber, int pageSize,QueryWhere where) {
-        Pageable pageable= PageRequest.of(pageNumber,pageSize);
-        return pageSelectQuery(pageable,where.getSelect(),where.getWhere(),where.getParams().toArray());
+
+    public Page<T> pageQuery(int pageNumber, int pageSize, QueryWhere where) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return pageSelectQuery(pageable, where.getSelect(), where.getWhere(), where.getParams().toArray());
     }
-    public Page<T> pageSelectQuery(int pageNumber, int pageSize,String select, String where, Object... params) {
-        Pageable pageable= PageRequest.of(pageNumber,pageSize);
-        return pageSelectQuery(pageable,select,where,params);
+
+    public Page<T> pageSelectQuery(int pageNumber, int pageSize, String select, String where, Object... params) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return pageSelectQuery(pageable, select, where, params);
     }
     //</editor-fold>
     //</editor-fold>
@@ -354,8 +382,9 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     //<editor-fold desc="query object">
     public Object getColumn(String columnName, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
-        return getColumn(columnName,queryWhere);
+        return getColumn(columnName, queryWhere);
     }
+
     public T getModel(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return getModel(queryWhere);
@@ -384,23 +413,40 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQuery(pageable, queryWhere);
     }
+
     public Page<T> pageQuery(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
-        return pageQuery(pageNumber,pageSize,queryWhere);
+        return pageQuery(pageNumber, pageSize, queryWhere);
     }
+
     public Page<Map<String, Object>> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return pageQueryMap(pageable, queryWhere);
     }
+
     public Page<Map<String, Object>> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
-        Pageable pageable=PageRequest.of(pageNumber,pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
-        return pageQueryMap(pageable,queryWhere);
+        return pageQueryMap(pageable, queryWhere);
     }
 
     //</editor-fold>
     //</editor-fold>
+    //</editor-fold>
     //<editor-fold desc="sql">
+
+    public T getBySql(String sql, Object... params) {
+        List<T> list = queryBySql(sql, params);
+        if (list == null || list.size() == 0) return null;
+        return list.get(0);
+    }
+
+    public Map<String, Object> getMapBySql(String sql, Object... params) {
+        List<Map<String, Object>> maps = queryMapBySql(sql, params);
+        if (maps == null || maps.size() == 0) return null;
+        return maps.get(0);
+    }
+
     @Transactional(readOnly = false)
     @Override
     public int truncateParmeryKey() {
@@ -420,40 +466,154 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return query.executeUpdate();
     }
 
-    public int executeSql(String sql,Object ... params){
-        Query query = entityManager.createNativeQuery(sql);
+    public int executeSql(String sql, Object... params) {
+        Query query = entityManager.createQuery(sql);
         if (params != null) {
             for (int index = 1; index <= params.length; index++) {
-                query.setParameter(index, params[index-1]);
+                query.setParameter(index, params[index - 1]);
             }
         }
         return query.executeUpdate();
     }
-    public T getBySql(String sql,Object ... params) {
-        List<T> list = queryBySql(sql, params);
-        if(list==null || list.size()==0) return null;
-        return list.get(0);
+
+
+    public List<T> queryBySql(String sql, Object... params) {
+//        sql = converToParamIndex(sql);
+//        Query query = entityManager.createNativeQuery(sql);
+//        if (params != null) {
+//            for (int index = 1; index <= params.length; index++) {
+//                query.setParameter(index, params[index - 1]);
+//            }
+//        }
+//        List<T> resultList = query.getResultList();
+//        return resultList;
+        return executeQueryBySql(entityClass,sql,params);
     }
 
-    public Map<String, Object> getMapBySql(String sql,Object ... params) {
-        List<Map<String, Object>> maps = queryMapBySql(sql, params);
-        if(maps==null || maps.size()==0) return null;
-        return maps.get(0);
+    public List<Map<String, Object>> queryMapBySql(String sql, Object... params) {
+        sql = converToParamIndex(sql);
+//        Query query = entityManager.createQuery(sql);
+//        if (params != null) {
+//            for (int index = 1; index <= params.length; index++) {
+//                query.setParameter(index, params[index - 1]);
+//            }
+//        }
+//        List<T> resultList = query.getResultList();
+//        @SuppressWarnings("unchecked")
+//        List<Map<String, Object>> list = query.unwrap(NativeQueryImpl.class)
+//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+//        return list;
+        return executeQueryMapBySql(sql,params);
     }
 
-    public List<T> queryBySql(String sql,Object ... params)
-    {
-        sql=converToParamIndex(sql);
-        Query query = entityManager.createNativeQuery(sql);
-        if (params != null) {
-            for (int index = 1; index <= params.length; index++) {
-                query.setParameter(index, params[index-1]);
-            }
+    public Page<T> pageBySql(Pageable pageable, String sql, Object... params) {
+        sql = converToParamIndex(sql);
+//        Query query = entityManager.createQuery(sql);
+//        if (params != null) {
+//            for (int index = 1; index <= params.length; index++) {
+//                query.setParameter(index, params[index - 1]);
+//            }
+//        }
+//        List<T> resultList = query.getResultList();
+//        int totalRows = resultList.size();
+//        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+//        query.setMaxResults(pageable.getPageSize());
+//        Page<T> result = new PageImpl<T>(query.getResultList(), pageable, totalRows);
+//        return result;
+        return executePageQueryBySql(pageable,entityClass, sql,params);
+
+//        SQLQuery sqlQuery = entityManager.createNativeQuery(sql).unwrap(SQLQuery.class);
+//        Query query =
+//                sqlQuery.setResultTransformer(Transformers.aliasToBean(BackstageUserListDTO.class));
+//        List<BackstageUserListDTO> list = query.list();
+    }
+
+    public Page<Map<String, Object>> pageMapBySql(Pageable pageable, String sql, Object... params) {
+        sql = converToParamIndex(sql);
+//        Query query = entityManager.createQuery(sql);
+//        //query.unwrap(SQLQuery.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+//        if (params != null) {
+//            for (int index = 1; index <= params.length; index++) {
+//                query.setParameter(index, params[index - 1]);
+//            }
+//        }
+//        List<T> resultList = query.getResultList();
+//        int totalRows = resultList.size();
+//        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+//        query.setMaxResults(pageable.getPageSize());
+//
+//        @SuppressWarnings("unchecked")
+//        List<Map<String, Object>> list = query.unwrap(NativeQueryImpl.class)
+//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+//        Page<Map<String, Object>> result = new PageImpl<Map<String, Object>>(list, pageable, totalRows);
+//        return result;
+        return executePageQueryMapBySql(pageable, sql,params);
+    }
+
+    //</editor-fold>
+    //<editor-fold desc="method">
+    String buildQuerySql(QueryWhere where) {
+        return buildQuerySql(where.getSelect(), where.getWhere());
+    }
+
+    String buildQuerySql(String select, String where) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ");
+        sql.append(select);
+        sql.append(" FROM ");
+        sql.append(getTableName());
+        if (where != null && !where.isEmpty()) {
+            sql.append(" WHERE ");
+            sql.append(where);
         }
-        List<T> resultList = query.getResultList();
-        return resultList;
+        return sql.toString();
     }
-    String converToParamIndex(String sql){
+
+    String buildDeleteSql(String where) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("DELETE ");
+        sql.append(" FROM ");
+        sql.append(getTableName());
+        if (where != null && !where.isEmpty()) {
+            sql.append(" WHERE ");
+            sql.append(where);
+        }
+        return sql.toString();
+    }
+
+    String buildUpdateSql(Map<String, Object> columnNameValues, String where) {
+        StringBuilder kvs = new StringBuilder();
+        int index = 1;
+        for (String key : columnNameValues.keySet()) {
+            if (kvs.length() > 0) {
+                kvs.append(",");
+            }
+            kvs.append(key);
+            kvs.append(" =?");
+//            kvs.append(index);
+            kvs.append(" ");
+            index++;
+        }
+        return buildUpdateSql(kvs.toString(), where);
+    }
+
+    String buildUpdateSql(String setString, String where) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE ");
+        sql.append(" FROM ");
+        sql.append(getTableName());
+        if (setString.length() > 0) {
+            sql.append(" SET ");
+            sql.append(setString);
+        }
+        if (where != null && !where.isEmpty()) {
+            sql.append(" WHERE ");
+            sql.append(where);
+        }
+        return sql.toString();
+    }
+
+    String converToParamIndex(String sql) {
 //        StringBuilder builder=new StringBuilder();
 //        int pos=sql.indexOf("?");
 //        int index=1;
@@ -468,117 +628,6 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        builder.append(sql);
 //        return builder.toString();
         return sql;
-    }
-
-    public List<Map<String, Object>> queryMapBySql(String sql,Object ... params) {
-        sql=converToParamIndex(sql);
-        Query query = entityManager.createNativeQuery(sql);
-        if (params != null) {
-            for (int index = 1; index <= params.length; index++) {
-                query.setParameter(index, params[index-1]);
-            }
-        }
-        List<T> resultList = query.getResultList();
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> list = query.unwrap(NativeQueryImpl.class)
-                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-        return list;
-    }
-
-    public Page<T> pageBySql(Pageable pageable, String sql,Object ... params)
-    {
-        sql=converToParamIndex(sql);
-        Query query = entityManager.createNativeQuery(sql);
-        if (params != null) {
-            for (int index = 1; index <= params.length; index++) {
-                query.setParameter(index, params[index-1]);
-            }
-        }
-        List<T> resultList = query.getResultList();
-        int totalRows = resultList.size();
-        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-        query.setMaxResults(pageable.getPageSize());
-        Page<T> result = new PageImpl<T>(query.getResultList(), pageable, totalRows);
-        return result;
-    }
-
-    public Page<Map<String, Object>> pageMapBySql(Pageable pageable,String sql,Object ... params) {
-        sql=converToParamIndex(sql);
-        Query query = entityManager.createNativeQuery(sql);
-        if (params != null) {
-            for (int index = 1; index <= params.length; index++) {
-                query.setParameter(index, params[index-1]);
-            }
-        }
-        List<T> resultList = query.getResultList();
-        int totalRows = resultList.size();
-        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-        query.setMaxResults(pageable.getPageSize());
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> list = query.unwrap(NativeQueryImpl.class)
-                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-        Page<Map<String, Object>> result = new PageImpl<Map<String, Object>>(list, pageable, totalRows);
-        return result;
-    }
-    //</editor-fold>
-    //</editor-fold>
-    //<editor-fold desc="method">
-    String buildQuerySql(QueryWhere where){
-        return buildQuerySql(where.getSelect(),where.getWhere());
-    }
-    String buildQuerySql(String select, String where) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT ");
-        sql.append(select);
-        sql.append(" FROM ");
-        sql.append(getTableName());
-        if (where != null && !where.isEmpty()) {
-            sql.append(" WHERE ");
-            sql.append(where);
-        }
-        return sql.toString();
-    }
-    String buildDeleteSql(String where) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("DELETE ");
-        sql.append(" FROM ");
-        sql.append(getTableName());
-        if (where != null && !where.isEmpty()) {
-            sql.append(" WHERE ");
-            sql.append(where);
-        }
-        return sql.toString();
-    }
-    String buildUpdateSql(Map<String,Object> columnNameValues, String where) {
-        StringBuilder kvs = new StringBuilder();
-        int index=1;
-        for (String key : columnNameValues.keySet()) {
-            if(kvs.length()>0){
-                kvs.append(",");
-            }
-            kvs.append(key);
-            kvs.append(" =?");
-//            kvs.append(index);
-            kvs.append(" ");
-            index++;
-        }
-        return buildUpdateSql(kvs.toString(),where);
-    }
-    String buildUpdateSql(String setString, String where) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("UPDATE ");
-        sql.append(" FROM ");
-        sql.append(getTableName());
-        if(setString.length()>0){
-            sql.append(" SET ");
-            sql.append(setString);
-        }
-        if (where != null && !where.isEmpty()) {
-            sql.append(" WHERE ");
-            sql.append(where);
-        }
-        return sql.toString();
     }
 
     @Override
@@ -603,103 +652,102 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         if (name != null && !name.isEmpty()) {
             return name;
         }
-        return entityClass.getSimpleName();
+        String simpleName = entityClass.getSimpleName();
+        return simpleName;
     }
 
     //<editor-fold desc="base sql">
+    <E> List<E> executeQueryBySql(
+            Class<E> resultClass,
+            String sql,
+            Object ... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if(params!=null){
+            int index=1;
+            for (Object param : params) {
+                query.setParameter(index,param);
+                index++;
+            }
+        }
+        List<E> result = query
+                        .unwrap(SQLQuery.class)
+                        .setResultTransformer(new ColumnToBean(resultClass))
+                        .list();
+        return result;
+    }
+    <E> Page<E> executePageQueryBySql(
+            Pageable page,
+            Class<E> resultClass,
+                               String sql,
+                               Object ... params) {
+        //获取总记录数
+        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
 
-//    @Override
-//    public boolean support(String modelType) {
-//        System.out.println(modelType + "###" + entityInformation.getEntityName());
-//        return entityInformation.getEntityName().equals(modelType);
-//    }
-//
-//    @Override
-//    public int executeUpdate(String sql, Object... values) {
-//        Query query = entityManager.createQuery(sql);
-//        if (values != null) {
-//            for (int i = 0; i < values.length; i++) {
-//                query.setParameter(i + 1, values[i]);
-//            }
-//        }
-//        return query.executeUpdate();
-//    }
-//
-//    @Override
-//    public int executeUpdate(String sql, Map<String, Object> params) {
-//        Query query = entityManager.createQuery(sql);
-//        for (String name : params.keySet()) {
-//            query.setParameter(name, params.get(name));
-//        }
-//        return query.executeUpdate();
-//    }
-//
-//    @Override
-//    public int executeUpdate(String sql, List<Object> values) {
-//        Query query = entityManager.createQuery(sql);
-//        for (int i = 0; i < values.size(); i++) {
-//            query.setParameter(i + 1, values.get(i));
-//        }
-//        return query.executeUpdate();
-//    }
-//
-//    @Override
-//    public int executeBySQL(String sql) {
-//        return entityManager.createNativeQuery(sql).executeUpdate();
-//    }
-//
-//    @Override
-//    public int executeBySQL(String sql, Object... values) {
-//        Query query = entityManager.createNativeQuery(sql);
-//        if (values != null) {
-//            for (int i = 0; i < values.length; i++) {
-//                query.setParameter(i + 1, values[i]);
-//            }
-//        }
-//        return query.executeUpdate();
-//    }
-//
-//    @Override
-//    public List<T> findAll(String sql, Object... values) {
-//        Query query = entityManager.createQuery(sql);
-//        if (values != null) {
-//            for (int i = 0; i < values.length; i++) {
-//                query.setParameter(i + 1, values[i]);
-//            }
-//        }
-//        return query.getResultList();
-//    }
-//
-//
-//    @Override
-//    public List<T> findAll(String sql, Map<String, Object> params) {
-//        Query query = entityManager.createQuery(sql);
-//        for (String name : params.keySet()) {
-//            query.setParameter(name, params.get(name));
-//        }
-//        return query.getResultList();
-//    }
-//
-//
-//    @Override
-//    public List<T> findAll(Sort sort) {
-//        // TODO 这是系统自动生成描述，请在此补完后续代码
-//        return super.findAll(sort);
-//    }
-//
-//    @Override
-//    public Page<T> findAll(Pageable pageable) {
-//        // TODO 这是系统自动生成描述，请在此补完后续代码
-//        return super.findAll(pageable);
-//    }
-//
-//    @Override
-//    public List<T> findAll(List<Condition> conditions) {
-//        // TODO Auto-generated method stub
-//        return findAll(SqlHelper.where(conditions));
-//    }
+        //获取分页结果
+        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
+        if(params!=null){
+            int index=1;
+            for (Object param : params) {
+                countQuery.setParameter(index,param);
+                pageQuery.setParameter(index,param);
+                index++;
+            }
+        }
+        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
+        List<E> result = totalRecord == 0 ? new ArrayList<>(0) :
+                pageQuery
+                        .setFirstResult((int)page.getOffset())
+                        .setMaxResults(page.getPageSize())
+                        .unwrap(SQLQuery.class)
+                        .setResultTransformer(new ColumnToBean(resultClass))
+                        .list();
+        return new PageImpl<>(result,page,totalRecord);
+    }
 
+    List<Map<String, Object>> executeQueryMapBySql(
+            String sql,
+            Object ... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if(params!=null){
+            int index=1;
+            for (Object param : params) {
+                query.setParameter(index,param);
+                index++;
+            }
+        }
+        List<Map<String, Object>> result = query
+                .unwrap(SQLQuery.class)
+                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
+                .list();
+        return result;
+    }
+    Page<Map<String, Object>> executePageQueryMapBySql(
+            Pageable page,
+            String sql,
+            Object ... params) {
+        //获取总记录数
+        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
 
+        //获取分页结果
+        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
+        if(params!=null){
+            int index=1;
+            for (Object param : params) {
+                countQuery.setParameter(index,param);
+                pageQuery.setParameter(index,param);
+                index++;
+            }
+        }
+        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
+        List<Map<String, Object>> result = totalRecord == 0 ? new ArrayList<>(0) :
+                pageQuery
+                        .setFirstResult((int)page.getOffset())
+                        .setMaxResults(page.getPageSize())
+                        .unwrap(SQLQuery.class)
+                        .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
+                        .list();
+        return new PageImpl<>(result,page,totalRecord);
+    }
     //</editor-fold>
     //<editor-fold desc="Events">
     @Override
