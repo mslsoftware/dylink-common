@@ -36,21 +36,25 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //<editor-fold desc="Extent">
     //<editor-fold desc="update">
+    //@Transactional(readOnly = false)
     @Override
     public int updateStatusById(ID id, Object value) {
         return updateColumnById(id, "status", value);
     }
 
+    //@Transactional(readOnly = false)
     @Override
     public int updateHiddenById(ID id, Object value) {
         return updateColumnById(id, "hidden", value);
     }
 
+    //@Transactional(readOnly = false)
     @Override
     public int updateColumnById(ID id, String fieldName, Object value) {
         return updateColumn(fieldName, value, new QueryWhere().addIdWhere(id));
     }
 
+    //@Transactional(readOnly = false)
     public int increaseColumnValueById(ID id, String fieldName, int delta) {
         return increaseColumn(fieldName, delta, "id=?", id);
     }
@@ -63,14 +67,20 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     public int deleteByIds(ID... ids) {
-        return deleteByWhere(new QueryWhere().addInWhere("id", ids));
+        if (ids.length == 1) {
+            return deleteByWhere(new QueryWhere().addWhere("id", ids[0]));
+        } else {
+            return deleteByWhere(new QueryWhere().addInWhere("id", ids));
+        }
     }
 
+    //@Transactional(readOnly = false)
     @Override
     public void deleteAll() {
         deleteByWhere(new QueryWhere());
     }
 
+    //@Transactional(readOnly = false)
     @Override
     public void deleteAll(Iterable<? extends T> entities) {
         List<ID> ids = new ArrayList<>();
@@ -168,7 +178,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     //</editor-fold>
     //<editor-fold desc="Base">
     //<editor-fold desc="update">
-    @Transactional
+    //@Transactional(readOnly = false)
     public int increaseColumn(String columName, int delta, String where, Object... params) {
         StringBuilder sql = new StringBuilder();
         sql.append(columName);
@@ -181,38 +191,38 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         for (Object param : params) {
             list.add(param);
         }
-        return executeSql(sql1, list.toArray());
+        return executeUpdate(sql1, list.toArray());
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public int increaseColumn(String columName, int delta, QueryWhere where) {
         return increaseColumn(columName, delta, where.getWhere(), where.getParams().toArray());
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public int updateColumn(String columName, Object value, String where, Object... params) {
         return updateColumn(columName, value, new QueryWhere(where, params));
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public int updateColumn(String columName, Object value, QueryWhere where) {
         Map columnNameValues = new HashMap<>();
         columnNameValues.put(columName, value);
         return updateColumns(columnNameValues, where);
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public int updateColumns(Map columnNameValues, String where, Object... params) {
         return updateColumns(columnNameValues, new QueryWhere(where, params));
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public int updateColumns(Map columnNameValues, QueryWhere where) {
         String sql = buildUpdateSql(columnNameValues, where.getWhere());
-        return executeSql(sql, where.getParams().toArray());
+        return executeUpdate(sql, where.getParams().toArray());
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public <S extends T> Iterable<S> batchUpdate(Iterable<S> var1) {
         Iterator<S> iterator = var1.iterator();
         int index = 0;
@@ -236,7 +246,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //</editor-fold>
     //<editor-fold desc="insert">
-    @Transactional
+    //@Transactional(readOnly = false)
     public <S extends T> S save(S entity) {
         if (this.entityInformation.isNew(entity)) {
             invokeEvent(entity, Event.PrePersist);
@@ -251,14 +261,14 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         }
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public <S extends T> S saveAndFlush(S entity) {
         S result = this.save(entity);
         this.flush();
         return result;
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public <S extends T> Iterable<S> batchSave(Iterable<S> var1) {
         Iterator<S> iterator = var1.iterator();
         int index = 0;
@@ -282,16 +292,16 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //</editor-fold>
     //<editor-fold desc="delete">
-    @Transactional
+    //@Transactional(readOnly = false)
     public int deleteByWhere(String where, Object... params) {
         String sql = buildDeleteSql(where);
-        return executeSql(sql, params);
+        return executeUpdate(sql, params);
     }
 
-    @Transactional
+    //@Transactional(readOnly = false)
     public int deleteByWhere(QueryWhere where) {
         String sql = buildDeleteSql(where.getWhere());
-        return executeSql(sql, where.getParams().toArray());
+        return executeUpdate(sql, where.getParams().toArray());
     }
 
     //</editor-fold>
@@ -447,35 +457,20 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return maps.get(0);
     }
 
-    @Transactional(readOnly = false)
     @Override
     public int truncateParmeryKey() {
         StringBuilder sql = new StringBuilder();
         sql.append("TRUNCATE TABLE ");
         sql.append(getTableName());
-        Query query = entityManager.createNativeQuery(sql.toString());
-        return query.executeUpdate();
+        return executeUpdate(sql.toString());
     }
 
-    @Transactional(readOnly = false)
     public int dropTable() {
         StringBuilder sql = new StringBuilder();
         sql.append("DROP TABLE ");
         sql.append(getTableName());
-        Query query = entityManager.createNativeQuery(sql.toString());
-        return query.executeUpdate();
+        return executeUpdate(sql.toString());
     }
-
-    public int executeSql(String sql, Object... params) {
-        Query query = entityManager.createQuery(sql);
-        if (params != null) {
-            for (int index = 1; index <= params.length; index++) {
-                query.setParameter(index, params[index - 1]);
-            }
-        }
-        return query.executeUpdate();
-    }
-
 
     public List<T> queryBySql(String sql, Object... params) {
 //        sql = converToParamIndex(sql);
@@ -487,7 +482,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        }
 //        List<T> resultList = query.getResultList();
 //        return resultList;
-        return executeQueryBySql(entityClass,sql,params);
+        return executeQueryBySql(entityClass, sql, params);
     }
 
     public List<Map> queryMapBySql(String sql, Object... params) {
@@ -503,7 +498,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        List<Map> list = query.unwrap(NativeQueryImpl.class)
 //                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
 //        return list;
-        return executeQueryMapBySql(sql,params);
+        return executeQueryMapBySql(sql, params);
     }
 
     public Page<T> pageBySql(Pageable pageable, String sql, Object... params) {
@@ -520,7 +515,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        query.setMaxResults(pageable.getPageSize());
 //        Page<T> result = new PageImpl<T>(query.getResultList(), pageable, totalRows);
 //        return result;
-        return executePageQueryBySql(pageable,entityClass, sql,params);
+        return executePageQueryBySql(pageable, entityClass, sql, params);
 
 //        SQLQuery sqlQuery = entityManager.createNativeQuery(sql).unwrap(SQLQuery.class);
 //        Query query =
@@ -547,7 +542,122 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
 //        Page<Map> result = new PageImpl<Map>(list, pageable, totalRows);
 //        return result;
-        return executePageQueryMapBySql(pageable, sql,params);
+        return executePageQueryMapBySql(pageable, sql, params);
+    }
+
+    //</editor-fold>
+    //<editor-fold desc="base sql">
+    @Transactional(readOnly = false)
+    public int executeUpdate(
+            String sql,
+            Object... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        return query.executeUpdate();
+    }
+
+    @Transactional(readOnly = true)
+    public <E> List<E> executeQueryBySql(
+            Class<E> resultClass,
+            String sql,
+            Object... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        List<E> result = query
+                .unwrap(SQLQuery.class)
+                .setResultTransformer(new ColumnToBean(resultClass))
+                .list();
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public <E> Page<E> executePageQueryBySql(
+            Pageable page,
+            Class<E> resultClass,
+            String sql,
+            Object... params) {
+        //获取总记录数
+        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
+
+        //获取分页结果
+        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                countQuery.setParameter(index, param);
+                pageQuery.setParameter(index, param);
+                index++;
+            }
+        }
+        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
+        List<E> result = totalRecord == 0 ? new ArrayList<>(0) :
+                pageQuery
+                        .setFirstResult((int) page.getOffset())
+                        .setMaxResults(page.getPageSize())
+                        .unwrap(SQLQuery.class)
+                        .setResultTransformer(new ColumnToBean(resultClass))
+                        .list();
+        return new PageImpl<>(result, page, totalRecord);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map> executeQueryMapBySql(
+            String sql,
+            Object... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        List<Map> result = query
+                .unwrap(SQLQuery.class)
+                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
+                .list();
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Map> executePageQueryMapBySql(
+            Pageable page,
+            String sql,
+            Object... params) {
+        //获取总记录数
+        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
+
+        //获取分页结果
+        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                countQuery.setParameter(index, param);
+                pageQuery.setParameter(index, param);
+                index++;
+            }
+        }
+        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
+        List<Map> result = totalRecord == 0 ? new ArrayList<>(0) :
+                pageQuery
+                        .setFirstResult((int) page.getOffset())
+                        .setMaxResults(page.getPageSize())
+                        .unwrap(SQLQuery.class)
+                        .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
+                        .list();
+        return new PageImpl<>(result, page, totalRecord);
     }
 
     //</editor-fold>
@@ -634,8 +744,20 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     public Class<T> getEntityClass() {
         return entityClass;
     }
-    //</editor-fold>
 
+    //</editor-fold>
+    //<editor-fold desc="Events">
+    @Override
+    public void batchInvokeEvent(Collection targets, Event event) {
+        defaultEntityEventCallback.batchInvokeEvent(targets, event);
+    }
+
+    @Override
+    public void invokeEvent(Object target, Event event) {
+        defaultEntityEventCallback.invokeEvent(target, event);
+    }
+
+    //</editor-fold>
     protected String getTableName() {
         String name = "";
         Table tableAnnotation = (Table) entityClass.getAnnotation(Table.class);
@@ -655,110 +777,5 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         String simpleName = entityClass.getSimpleName();
         return simpleName;
     }
-
-    //<editor-fold desc="base sql">
-    <E> List<E> executeQueryBySql(
-            Class<E> resultClass,
-            String sql,
-            Object ... params) {
-        javax.persistence.Query query = entityManager.createNativeQuery(sql);
-        if(params!=null){
-            int index=1;
-            for (Object param : params) {
-                query.setParameter(index,param);
-                index++;
-            }
-        }
-        List<E> result = query
-                        .unwrap(SQLQuery.class)
-                        .setResultTransformer(new ColumnToBean(resultClass))
-                        .list();
-        return result;
-    }
-    <E> Page<E> executePageQueryBySql(
-            Pageable page,
-            Class<E> resultClass,
-                               String sql,
-                               Object ... params) {
-        //获取总记录数
-        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
-
-        //获取分页结果
-        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
-        if(params!=null){
-            int index=1;
-            for (Object param : params) {
-                countQuery.setParameter(index,param);
-                pageQuery.setParameter(index,param);
-                index++;
-            }
-        }
-        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
-        List<E> result = totalRecord == 0 ? new ArrayList<>(0) :
-                pageQuery
-                        .setFirstResult((int)page.getOffset())
-                        .setMaxResults(page.getPageSize())
-                        .unwrap(SQLQuery.class)
-                        .setResultTransformer(new ColumnToBean(resultClass))
-                        .list();
-        return new PageImpl<>(result,page,totalRecord);
-    }
-
-    List<Map> executeQueryMapBySql(
-            String sql,
-            Object ... params) {
-        javax.persistence.Query query = entityManager.createNativeQuery(sql);
-        if(params!=null){
-            int index=1;
-            for (Object param : params) {
-                query.setParameter(index,param);
-                index++;
-            }
-        }
-        List<Map> result = query
-                .unwrap(SQLQuery.class)
-                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
-                .list();
-        return result;
-    }
-    Page<Map> executePageQueryMapBySql(
-            Pageable page,
-            String sql,
-            Object ... params) {
-        //获取总记录数
-        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
-
-        //获取分页结果
-        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
-        if(params!=null){
-            int index=1;
-            for (Object param : params) {
-                countQuery.setParameter(index,param);
-                pageQuery.setParameter(index,param);
-                index++;
-            }
-        }
-        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
-        List<Map> result = totalRecord == 0 ? new ArrayList<>(0) :
-                pageQuery
-                        .setFirstResult((int)page.getOffset())
-                        .setMaxResults(page.getPageSize())
-                        .unwrap(SQLQuery.class)
-                        .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
-                        .list();
-        return new PageImpl<>(result,page,totalRecord);
-    }
-    //</editor-fold>
-    //<editor-fold desc="Events">
-    @Override
-    public void batchInvokeEvent(Collection targets, Event event) {
-        defaultEntityEventCallback.batchInvokeEvent(targets, event);
-    }
-
-    @Override
-    public void invokeEvent(Object target, Event event) {
-        defaultEntityEventCallback.invokeEvent(target, event);
-    }
-    //</editor-fold>
 
 }

@@ -1,6 +1,7 @@
 package cn.net.vidyo.dylink.data.service;
 
 import cn.net.vidyo.dylink.data.jpa.CommonJpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.List;
@@ -10,35 +11,47 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
 
     protected abstract DAO getEntityDao();
 
+    @Transactional(readOnly = false)
     @Override
     public int updateStatusById(ID id, Object value) {
         return getEntityDao().updateStatusById(id,value);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public int updateHiddenById(ID id, Object value) {
         return getEntityDao().updateHiddenById(id,value);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public int deleteByIds(Iterable<ID> ids) {
         return getEntityDao().deleteByIds(ids);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public int deleteByIds(ID... ids) {
         return getEntityDao().deleteByIds(ids);
     }
+    @Transactional(readOnly = false)
+    @Override
+    public int deleteById(ID id) {
+        return getEntityDao().deleteByIds(id);
+    }
 
+    @Transactional(readOnly = false)
     @Override
     public void deleteAll() {
         getEntityDao().deleteAll();
     }
 
+    @Transactional(readOnly = false)
     @Override
     public void deleteAll(Iterable<? extends T> var1) {
         getEntityDao().deleteAll(var1);
     }
+
 
     @Override
     public T getById(ID id) {
@@ -55,11 +68,13 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
         return getEntityDao().getByEntityId(t);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public int truncateParmeryKey() {
         return getEntityDao().truncateParmeryKey();
     }
 
+    @Transactional(readOnly = false)
     @Override
     public int dropTable() {
         return getEntityDao().dropTable();
@@ -90,21 +105,25 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
         return getEntityDao().findByIds(ids);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public <S extends T> Iterable<S> batchUpdate(Iterable<S> var1) {
         return getEntityDao().batchUpdate(var1);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public <S extends T> S save(S entity) {
         return getEntityDao().save(entity);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public <S extends T> S saveAndFlush(S entity) {
         return getEntityDao().saveAndFlush(entity);
     }
 
+    @Transactional(readOnly = false)
     @Override
     public <S extends T> Iterable<S> batchSave(Iterable<S> var1) {
         return getEntityDao().batchSave(var1);

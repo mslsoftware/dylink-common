@@ -146,7 +146,6 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
 
 
 
-    int executeSql(String sql,Object ... params);
     T getBySql(String sql,Object ... params);
 
     Map getMapBySql(String sql,Object ... params);
@@ -168,14 +167,34 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
      */
     Class<T> getEntityClass();
 
-//    /**
-//     * 执行ql语句
-//     *
-//     * @param qlString 基于jpa标准的jpql语句
-//     * @param values   jpql中的?参数值,单个参数值或者多个参数值
-//     * @return 返回执行后受影响的数据个数
-//     */
-//    int executeUpdate(String qlString, Object... values);
+    /**
+     * 执行ql语句
+     *
+     * @param qlString 基于jpa标准的jpql语句
+     * @param values   jpql中的?参数值,单个参数值或者多个参数值
+     * @return 返回执行后受影响的数据个数
+     */
+    int executeUpdate(String qlString, Object... values);
+
+    <E> List<E> executeQueryBySql(
+            Class<E> resultClass,
+            String sql,
+            Object ... params);
+
+    <E> Page<E> executePageQueryBySql(
+            Pageable page,
+            Class<E> resultClass,
+            String sql,
+            Object... params);
+
+    List<Map> executeQueryMapBySql(
+            String sql,
+            Object... params);
+
+    Page<Map> executePageQueryMapBySql(
+            Pageable page,
+            String sql,
+            Object... params);
 //
 //    /**
 //     * 执行ql语句

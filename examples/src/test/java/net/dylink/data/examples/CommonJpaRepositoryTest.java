@@ -32,11 +32,15 @@ public class CommonJpaRepositoryTest {
         List<User> users = userService.query(userCondition);
         if(users.size()>0){
             User user = users.get(0);
+            user.setMoney(293);
+            userService.save(user);
+
             userCondition.setId(user.getId());
         }
         users = userService.query(userCondition);
 
         List<User> byAge = userService.findByAge(1, 5);
+        userService.deleteById(byAge.get(0).getId());
 
         System.out.println(users);
         //userService.deleteAll(users);

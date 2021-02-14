@@ -27,6 +27,7 @@ public interface EntityService<DAO extends CommonJpaRepository<T, ID>, T, ID ext
     int deleteByIds(Iterable<ID> ids);
 
     int deleteByIds(ID ... ids);
+    int deleteById(ID id);
 
     //</editor-fold>
     //<editor-fold desc="Query">
