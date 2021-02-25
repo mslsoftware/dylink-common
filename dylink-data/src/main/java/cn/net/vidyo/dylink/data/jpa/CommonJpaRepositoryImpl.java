@@ -308,6 +308,9 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     //<editor-fold desc="query">
 
     //<editor-fold desc="query object">
+    public Object getColumn(String columnName, String where, Object... params){
+        return getColumn(columnName,new QueryWhere(where, params));
+    }
     public Object getColumn(String columnName, QueryWhere where) {
         if (where.getSelect().length() == 1) {
             where.setSelect(columnName);
@@ -320,11 +323,25 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return null;
     }
 
+    public T getModel( String where, Object... params){
+        return getModel(new QueryWhere(where, params));
+    }
     public T getModel(QueryWhere where) {
         String sql = buildQuerySql(where);
         return getBySql(sql, where.getParams().toArray());
     }
-
+    public <C> C getColumn(Class<C> cClass,String columnName, String where, Object... params){
+        QueryWhere queryWhere = new QueryWhere(where, params);
+        queryWhere.setSelect(columnName);
+        return getColumn(cClass, queryWhere);
+    }
+    public <C> C getColumn(Class<C> cClass, QueryWhere where) {
+        String sql = buildQuerySql(where);
+        return getObjectBySql(cClass, sql, where.getParams().toArray());
+    }
+    public Map getMap(String where, Object... params){
+        return getMap(new QueryWhere(where, params));
+    }
     public Map getMap(QueryWhere where) {
         String sql = buildQuerySql(where);
         return getMapBySql(sql, where.getParams().toArray());
@@ -332,11 +349,24 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //</editor-fold>
     //<editor-fold desc="query object list">
+    public List<T> query(String where, Object... params) {
+        return query(new QueryWhere(where, params));
+    }
     public List<T> query(QueryWhere where) {
         String sql = buildQuerySql(where);
         return queryBySql(sql, where.getParams().toArray());
     }
 
+    public <C> List<C> query(Class<C> cClass,String where, Object... params) {
+        return query(cClass,new QueryWhere(where, params));
+    }
+    public <C> List<C> query(Class<C> cClass,QueryWhere where) {
+        String sql = buildQuerySql(where);
+        return queryObjectBySql(cClass, sql, where.getParams().toArray());
+    }
+    public List<Map> queryMap(String where, Object... params){
+        return queryMap(new QueryWhere(where, params));
+    }
     public List<Map> queryMap(QueryWhere where) {
         String sql = buildQuerySql(where);
         return queryMapBySql(sql, where.getParams().toArray());
@@ -344,6 +374,21 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //</editor-fold>
     //<editor-fold desc="query object page">
+
+    public Page<T> pageQuery(int pageNumber, int pageSize, String where, Object... params) {
+        return pageSelectQuery(pageNumber, pageSize, "*", where, params);
+    }
+
+    public Page<T> pageQuery(int pageNumber, int pageSize, QueryWhere where) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return pageSelectQuery(pageable, where.getSelect(), where.getWhere(), where.getParams().toArray());
+    }
+
+    public Page<T> pageSelectQuery(int pageNumber, int pageSize, String select, String where, Object... params) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return pageSelectQuery(pageable, select, where, params);
+    }
+
     public Page<T> pageQuery(Pageable pageable, String where, Object... params) {
         return pageSelectQuery(pageable, "*", where, params);
     }
@@ -372,18 +417,18 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return pageMapBySql(pageable, sql, params);
     }
 
-    public Page<T> pageQuery(int pageNumber, int pageSize, String where, Object... params) {
-        return pageSelectQuery(pageNumber, pageSize, "*", where, params);
+    public <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, String where, Object... params) {
+        return pageQueryObject(cClass, pageable, new QueryWhere(where, params));
     }
 
-    public Page<T> pageQuery(int pageNumber, int pageSize, QueryWhere where) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return pageSelectQuery(pageable, where.getSelect(), where.getWhere(), where.getParams().toArray());
+    public <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, QueryWhere where) {
+        String sql = buildQuerySql(where.getSelect(), where.getWhere());
+        return pageQueryObject(cClass, pageable, sql, where.getParams().toArray());
     }
 
-    public Page<T> pageSelectQuery(int pageNumber, int pageSize, String select, String where, Object... params) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return pageSelectQuery(pageable, select, where, params);
+    public <C>  Page<C> pageSelectQueryObject(Class<C> cClass,Pageable pageable, String select, String where, Object... params) {
+        String sql = buildQuerySql(select, where);
+        return pageObjectBySql(cClass, pageable, sql, params);
     }
     //</editor-fold>
     //</editor-fold>
@@ -450,7 +495,11 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         if (list == null || list.size() == 0) return null;
         return list.get(0);
     }
-
+    public <C> C getObjectBySql(Class<C> cClass, String sql, Object... params) {
+        List<C> list = queryObjectBySql(cClass, sql, params);
+        if (list == null || list.size() == 0) return null;
+        return list.get(0);
+    }
     public Map getMapBySql(String sql, Object... params) {
         List<Map> maps = queryMapBySql(sql, params);
         if (maps == null || maps.size() == 0) return null;
@@ -483,6 +532,22 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        List<T> resultList = query.getResultList();
 //        return resultList;
         return executeQueryBySql(entityClass, sql, params);
+    }
+
+    public <C> List<C> queryObjectBySql(Class<C> cClass, String sql, Object... params) {
+        sql = converToParamIndex(sql);
+//        Query query = entityManager.createQuery(sql);
+//        if (params != null) {
+//            for (int index = 1; index <= params.length; index++) {
+//                query.setParameter(index, params[index - 1]);
+//            }
+//        }
+//        List<T> resultList = query.getResultList();
+//        @SuppressWarnings("unchecked")
+//        List<Map> list = query.unwrap(NativeQueryImpl.class)
+//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+//        return list;
+        return executeQueryBySql(cClass, sql, params);
     }
 
     public List<Map> queryMapBySql(String sql, Object... params) {
@@ -543,6 +608,27 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        Page<Map> result = new PageImpl<Map>(list, pageable, totalRows);
 //        return result;
         return executePageQueryMapBySql(pageable, sql, params);
+    }
+    public <C> Page<C> pageObjectBySql(Class<C> cClass,Pageable pageable, String sql, Object... params) {
+        sql = converToParamIndex(sql);
+//        Query query = entityManager.createQuery(sql);
+//        //query.unwrap(SQLQuery.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+//        if (params != null) {
+//            for (int index = 1; index <= params.length; index++) {
+//                query.setParameter(index, params[index - 1]);
+//            }
+//        }
+//        List<T> resultList = query.getResultList();
+//        int totalRows = resultList.size();
+//        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+//        query.setMaxResults(pageable.getPageSize());
+//
+//        @SuppressWarnings("unchecked")
+//        List<Map> list = query.unwrap(NativeQueryImpl.class)
+//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+//        Page<Map> result = new PageImpl<Map>(list, pageable, totalRows);
+//        return result;
+        return executePageQueryBySql(pageable,cClass, sql, params);
     }
 
     //</editor-fold>

@@ -95,13 +95,22 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     //<editor-fold desc="query">
 
     //<editor-fold desc="query object">
+    Object getColumn(String columnName, String where, Object... params);
     Object getColumn(String columnName,QueryWhere where);
+    T getModel( String where, Object... params);
     T getModel(QueryWhere where);
+    <C> C getColumn(Class<C> cClass,String columnName, String where, Object... params);
+    <C> C getColumn(Class<C> cClass, QueryWhere where);
+    Map getMap(String where, Object... params);
     Map getMap(QueryWhere where);
 
     //</editor-fold>
     //<editor-fold desc="query object list">
+    List<T> query(String where, Object... params);
     List<T> query(QueryWhere where);
+    <C> List<C> query(Class<C> cClass,String where, Object... params);
+    <C> List<C> query(Class<C> cClass,QueryWhere where);
+    List<Map> queryMap(String where, Object... params);
     List<Map> queryMap(QueryWhere where);
 
     //</editor-fold>
@@ -113,6 +122,10 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     Page<Map> pageQueryMap(Pageable pageable, String where, Object... params) ;
     Page<Map> pageQueryMap(Pageable pageable, QueryWhere where) ;
     Page<Map> pageSelectQueryMap(Pageable pageable,String select, String where, Object... params) ;
+
+    <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, String where, Object... params);
+    <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, QueryWhere where);
+    <C>  Page<C> pageSelectQueryObject(Class<C> cClass,Pageable pageable, String select, String where, Object... params);
 
     Page<T> pageQuery(int pageNumber, int pageSize, String where, Object... params);
     Page<T> pageQuery(int pageNumber, int pageSize,QueryWhere where);
@@ -148,14 +161,16 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
 
     T getBySql(String sql,Object ... params);
 
+    <C> C getObjectBySql(Class<C> cClass, String sql, Object... params);
+
     Map getMapBySql(String sql,Object ... params);
 
     List<T> queryBySql(String sql,Object ... params);
-
+    <C> List<C> queryObjectBySql(Class<C> cClass, String sql, Object... params);
     List<Map> queryMapBySql(String sql,Object ... params);
 
     Page<T> pageBySql(Pageable pageable, String sql,Object ... params);
-
+    <C> Page<C> pageObjectBySql(Class<C> cClass,Pageable pageable, String sql, Object... params);
     Page<Map> pageMapBySql(Pageable pageable,String sql,Object ... params);
     //</editor-fold>
     //</editor-fold>
