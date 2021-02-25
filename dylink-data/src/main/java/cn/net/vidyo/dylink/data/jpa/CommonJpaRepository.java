@@ -108,8 +108,8 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     //<editor-fold desc="query object list">
     List<T> query(String where, Object... params);
     List<T> query(QueryWhere where);
-    <C> List<C> query(Class<C> cClass,String where, Object... params);
-    <C> List<C> query(Class<C> cClass,QueryWhere where);
+    <C> List<C> queryColumn(Class<C> cClass,String select,String where, Object... params);
+    <C> List<C> queryColumn(Class<C> cClass,QueryWhere where);
     List<Map> queryMap(String where, Object... params);
     List<Map> queryMap(QueryWhere where);
 
@@ -123,9 +123,9 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     Page<Map> pageQueryMap(Pageable pageable, QueryWhere where) ;
     Page<Map> pageSelectQueryMap(Pageable pageable,String select, String where, Object... params) ;
 
-    <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, String where, Object... params);
-    <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, QueryWhere where);
-    <C>  Page<C> pageSelectQueryObject(Class<C> cClass,Pageable pageable, String select, String where, Object... params);
+    <C>  Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable,String select, String where, Object... params);
+    <C>  Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable, QueryWhere where);
+    <C>  Page<C> pageSelectQueryColumn(Class<C> cClass, Pageable pageable, String select, String where, Object... params);
 
     Page<T> pageQuery(int pageNumber, int pageSize, String where, Object... params);
     Page<T> pageQuery(int pageNumber, int pageSize,QueryWhere where);
@@ -138,18 +138,21 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     Object getColumn(String columnName, Condition condition, ConditionCompose iConditionCompose);
     T getModel(Condition condition, ConditionCompose iConditionCompose);
 
+    <C> C getColumn(Class<C> cClass, String columnName, Condition condition, ConditionCompose iConditionCompose);
     Map getMap(Condition condition, ConditionCompose iConditionCompose);
 
     //</editor-fold>
     //<editor-fold desc="query object list">
     List<T> query(Condition condition, ConditionCompose iConditionCompose);
-
+    <C> List<C> queryColumn(Class<C> cClass, Condition condition, ConditionCompose iConditionCompose);
     List<Map> queryMap(Condition condition, ConditionCompose iConditionCompose);
 
     //</editor-fold>
     //<editor-fold desc="query object page">
     Page<T> pageQuery(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
     Page<T> pageQuery(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose);
+    <C> Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
+    <C> Page<C> pageQueryColumn(Class<C> cClass,int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose);
     Page<Map> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose);
     Page<Map> pageQueryMap(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) ;
 

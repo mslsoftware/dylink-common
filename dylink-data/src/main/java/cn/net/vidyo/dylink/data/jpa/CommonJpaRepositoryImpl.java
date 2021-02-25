@@ -6,13 +6,11 @@ import cn.net.vidyo.dylink.data.jpa.support.ColumnToBean;
 import cn.net.vidyo.dylink.data.jpa.support.DefaultEntityEventCallback;
 import cn.net.vidyo.dylink.util.ObjectUtil;
 import org.hibernate.SQLQuery;
-import org.hibernate.query.internal.NativeQueryImpl;
 import org.hibernate.transform.Transformers;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -330,9 +328,9 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         String sql = buildQuerySql(where);
         return getBySql(sql, where.getParams().toArray());
     }
-    public <C> C getColumn(Class<C> cClass,String columnName, String where, Object... params){
+    public <C> C getColumn(Class<C> cClass,String select, String where, Object... params){
         QueryWhere queryWhere = new QueryWhere(where, params);
-        queryWhere.setSelect(columnName);
+        queryWhere.setSelect(select);
         return getColumn(cClass, queryWhere);
     }
     public <C> C getColumn(Class<C> cClass, QueryWhere where) {
@@ -357,12 +355,14 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return queryBySql(sql, where.getParams().toArray());
     }
 
-    public <C> List<C> query(Class<C> cClass,String where, Object... params) {
-        return query(cClass,new QueryWhere(where, params));
+    public <C> List<C> queryColumn(Class<C> cClass,String select,String where, Object... params) {
+        QueryWhere selectWhere = new QueryWhere(where, params);
+        selectWhere.setSelect(select);
+        return queryColumn(cClass, selectWhere);
     }
-    public <C> List<C> query(Class<C> cClass,QueryWhere where) {
-        String sql = buildQuerySql(where);
-        return queryObjectBySql(cClass, sql, where.getParams().toArray());
+    public <C> List<C> queryColumn(Class<C> cClass,QueryWhere selectWhere) {
+        String sql = buildQuerySql(selectWhere);
+        return queryObjectBySql(cClass, sql, selectWhere.getParams().toArray());
     }
     public List<Map> queryMap(String where, Object... params){
         return queryMap(new QueryWhere(where, params));
@@ -417,16 +417,17 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return pageMapBySql(pageable, sql, params);
     }
 
-    public <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, String where, Object... params) {
-        return pageQueryObject(cClass, pageable, new QueryWhere(where, params));
+    public <C>  Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable,String select, String where, Object... params) {
+        QueryWhere where1 = new QueryWhere(where, params);
+        where1.setSelect(select);
+        return pageQueryColumn(cClass, pageable, where1);
     }
 
-    public <C>  Page<C> pageQueryObject(Class<C> cClass,Pageable pageable, QueryWhere where) {
-        String sql = buildQuerySql(where.getSelect(), where.getWhere());
-        return pageQueryObject(cClass, pageable, sql, where.getParams().toArray());
+    public <C>  Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable, QueryWhere where) {
+        return pageSelectQueryColumn(cClass, pageable, where.getSelect(), where.getWhere(), where.getParams().toArray());
     }
 
-    public <C>  Page<C> pageSelectQueryObject(Class<C> cClass,Pageable pageable, String select, String where, Object... params) {
+    public <C>  Page<C> pageSelectQueryColumn(Class<C> cClass, Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
         return pageObjectBySql(cClass, pageable, sql, params);
     }
@@ -438,6 +439,11 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     public Object getColumn(String columnName, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return getColumn(columnName, queryWhere);
+    }
+    public <C> C getColumn(Class<C> cClass, String columnName, Condition condition, ConditionCompose iConditionCompose) {
+        QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
+        queryWhere.setSelect(columnName);
+        return getColumn(cClass, queryWhere);
     }
 
     public T getModel(Condition condition, ConditionCompose iConditionCompose) {
@@ -457,6 +463,10 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return query(queryWhere);
     }
 
+    public <C> List<C> queryColumn(Class<C> cClass, Condition condition, ConditionCompose iConditionCompose) {
+        QueryWhere selectWhere = iConditionCompose.buildWhere(condition);
+        return queryColumn(cClass, selectWhere);
+    }
     public List<Map> queryMap(Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
         return queryMap(queryWhere);
@@ -471,7 +481,17 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     public Page<T> pageQuery(int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
         QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
-        return pageQuery(pageNumber, pageSize, queryWhere);
+        return pageQuery(PageRequest.of(pageNumber,pageSize), queryWhere);
+    }
+
+    public <C> Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
+        QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
+        return pageQueryColumn(cClass,pageable, queryWhere);
+    }
+
+    public <C> Page<C> pageQueryColumn(Class<C> cClass,int pageNumber, int pageSize, Condition condition, ConditionCompose iConditionCompose) {
+        QueryWhere queryWhere = iConditionCompose.buildWhere(condition);
+        return pageQueryColumn(cClass,PageRequest.of(pageNumber,pageSize), queryWhere);
     }
 
     public Page<Map> pageQueryMap(Pageable pageable, Condition condition, ConditionCompose iConditionCompose) {
