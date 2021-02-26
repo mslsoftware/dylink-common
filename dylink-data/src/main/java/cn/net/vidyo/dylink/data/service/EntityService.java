@@ -13,6 +13,7 @@ import java.util.Map;
 public interface EntityService<DAO extends CommonJpaRepository<T, ID>, T, ID extends Serializable>  {
 
 
+    DAO getRepositoryDao();
     //<editor-fold desc="Extent">
     //<editor-fold desc="update">
 

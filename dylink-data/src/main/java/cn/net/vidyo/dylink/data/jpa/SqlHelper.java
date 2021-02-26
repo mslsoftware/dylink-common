@@ -1,17 +1,5 @@
 package cn.net.vidyo.dylink.data.jpa;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.jpa.domain.Specification;
-
-import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static cn.net.vidyo.dylink.data.jpa.SqlEQ.*;
-
 public class SqlHelper {
 //    private Specification spec;
 //

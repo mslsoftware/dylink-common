@@ -100,6 +100,23 @@ public class QueryWhere {
 
     //</editor-fold>
     //<editor-fold desc="where method">
+    public QueryWhere addEqualWhere(String columnName ,Object value){
+        return this.linkWhere(SqlLogic.And,columnName,value);
+    }
+    public QueryWhere addOrderGroupBy(String sql,Object... params){
+        if(sql==null || sql.length()==0 || this.where.length()==0){
+            return this;
+        }
+        StringBuilder builder= new StringBuilder(this.where);
+        builder.append(" ");
+        builder.append(sql);
+        if(params!=null){
+            for (Object param : params) {
+                this.params.add(param);
+            }
+        }
+        return this;
+    }
     public QueryWhere addIdWhere(SqlLogic logic, Object id){
         return addWhere(logic,"id",id);
     }

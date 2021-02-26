@@ -194,7 +194,7 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
      */
     int executeUpdate(String qlString, Object... values);
 
-    <E> List<E> executeQueryBySql(
+    <E> List<E> executeValueQueryBySql(
             Class<E> resultClass,
             String sql,
             Object ... params);

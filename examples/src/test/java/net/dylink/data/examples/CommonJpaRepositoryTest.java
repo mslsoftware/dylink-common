@@ -1,5 +1,6 @@
 package net.dylink.data.examples;
 
+import net.dylink.data.examples.data.dao.UserDao;
 import net.dylink.data.examples.data.model.User;
 import net.dylink.data.examples.data.model.UserCondition;
 import net.dylink.data.examples.data.service.UserService;
@@ -12,8 +13,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -44,6 +43,14 @@ public class CommonJpaRepositoryTest {
 
         System.out.println(users);
         //userService.deleteAll(users);
+    }
+    @Test
+    public void testQuery(){
+        UserDao userDao = userService.getRepositoryDao();
+        List<Integer> age = userDao.queryColumn(Integer.class, "age", "id<?", 10);
+        System.out.println(age);
+        List<String> names = userDao.queryColumn(String.class, "name", "id>5 and id<18");
+        System.out.println(names);
     }
     @Test
     public void insert(){

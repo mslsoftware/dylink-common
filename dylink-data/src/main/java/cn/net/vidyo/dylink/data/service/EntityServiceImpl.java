@@ -8,7 +8,9 @@ import java.util.List;
 
 public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, T, ID extends Serializable> implements EntityService<DAO, T, ID> {
 
-
+    public DAO getRepositoryDao(){
+        return getEntityDao();
+    }
     protected abstract DAO getEntityDao();
 
     @Transactional(readOnly = false)

@@ -5,11 +5,15 @@ import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
 import cn.net.vidyo.dylink.data.jpa.support.ColumnToBean;
 import cn.net.vidyo.dylink.data.jpa.support.DefaultEntityEventCallback;
 import cn.net.vidyo.dylink.util.ObjectUtil;
+import cn.net.vidyo.dylink.util.ValueUtil;
 import org.hibernate.SQLQuery;
+import org.hibernate.query.internal.NativeQueryImpl;
+import org.hibernate.query.spi.NativeQueryImplementor;
 import org.hibernate.transform.Transformers;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.jdbc.object.SqlQuery;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -516,9 +520,9 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return list.get(0);
     }
     public <C> C getObjectBySql(Class<C> cClass, String sql, Object... params) {
-        List<C> list = queryObjectBySql(cClass, sql, params);
-        if (list == null || list.size() == 0) return null;
-        return list.get(0);
+        return  executeValueBySql(cClass, sql, params);
+//        if (list == null || list.size() == 0) return null;
+//        return list.get(0);
     }
     public Map getMapBySql(String sql, Object... params) {
         List<Map> maps = queryMapBySql(sql, params);
@@ -551,7 +555,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        }
 //        List<T> resultList = query.getResultList();
 //        return resultList;
-        return executeQueryBySql(entityClass, sql, params);
+        return this.executeValueQueryBySql(entityClass, sql, params);
     }
 
     public <C> List<C> queryObjectBySql(Class<C> cClass, String sql, Object... params) {
@@ -567,7 +571,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 //        List<Map> list = query.unwrap(NativeQueryImpl.class)
 //                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
 //        return list;
-        return executeQueryBySql(cClass, sql, params);
+        return this.executeValueQueryBySql(cClass, sql, params);
     }
 
     public List<Map> queryMapBySql(String sql, Object... params) {
@@ -669,7 +673,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     @Transactional(readOnly = true)
-    public <E> List<E> executeQueryBySql(
+    public <E> E executeValueBySql(
             Class<E> resultClass,
             String sql,
             Object... params) {
@@ -681,11 +685,42 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
                 index++;
             }
         }
-        List<E> result = query
-                .unwrap(SQLQuery.class)
-                .setResultTransformer(new ColumnToBean(resultClass))
-                .list();
-        return result;
+        return (E)query.getSingleResult();
+    }
+    @Transactional(readOnly = true)
+    public <E> List<E> executeValueQueryBySql(
+            Class<E> resultClass,
+            String sql,
+            Object... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class);
+                //.setResultTransformer(new ColumnToBean(resultClass));
+        List resultList = nativeQueryImplementor.getResultList();
+        return resultList;
+    }
+    @Transactional(readOnly = true)
+    public <E> List<E> executeObjectQueryBySql(
+            Class<E> resultClass,
+            String sql,
+            Object... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class)
+                .setResultTransformer(new ColumnToBean(resultClass));
+        return nativeQueryImplementor.getResultList();
     }
 
     @Transactional(readOnly = true)
@@ -767,6 +802,55 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     //</editor-fold>
+
+
+    //<editor-fold desc="new sql">
+    //    public int executeNonQuery(String sql,
+//                               Object... params){
+//
+//    }
+//    public <V> V executeScaler(Class<V> eClass, String sql,
+//                               Object... params){
+//
+//    }
+//    public <E> E executeOne(Class<E> eClass, String sql,
+//                                    Object... params){
+//
+//    }
+//    public <E> List<E> executeQuery(Class<E> eClass, String sql,
+//                                    Object... params){
+//
+//    }
+//    public <E> Page<E> ExecutePageQuery(Class<E> eClass,int pageNumber,int pageSize,String sql,
+//                               Object... params){
+//        //获取总记录数
+//        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
+//
+//        //获取分页结果
+//        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
+//        if (params != null) {
+//            int index = 1;
+//            for (Object param : params) {
+//                countQuery.setParameter(index, param);
+//                pageQuery.setParameter(index, param);
+//                index++;
+//            }
+//        }
+//        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
+//        pageQuery.unwrap(NativeQueryImpl.class)
+//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+//        List<Map> result = totalRecord == 0 ? new ArrayList<>(0) :
+//                pageQuery
+//                        .setFirstResult(pageNumber)
+//                        .setMaxResults(pageSize)
+//                        .unwrap(SQLQuery.class)
+//                        .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
+//                        .list();
+//        PageRequest page = PageRequest.of(pageNumber, pageSize);
+//        return new PageImpl<E>(result, page, totalRecord);
+//    }
+    //</editor-fold>
+
     //<editor-fold desc="method">
     String buildQuerySql(QueryWhere where) {
         return buildQuerySql(where.getSelect(), where.getWhere());
