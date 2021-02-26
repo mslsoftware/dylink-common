@@ -110,6 +110,7 @@ public class QueryWhere {
         StringBuilder builder= new StringBuilder(this.where);
         builder.append(" ");
         builder.append(sql);
+        this.where=builder.toString();
         if(params!=null){
             for (Object param : params) {
                 this.params.add(param);
