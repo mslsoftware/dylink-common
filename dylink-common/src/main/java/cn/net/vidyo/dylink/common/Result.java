@@ -214,6 +214,22 @@ public class Result implements Serializable {
         this.data = data;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
     /*
      *
      * @see java.lang.Object#toString()
