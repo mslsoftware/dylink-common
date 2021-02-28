@@ -5,11 +5,9 @@ import cn.net.vidyo.dylink.data.jpa.sql.QueryWhere;
 import cn.net.vidyo.dylink.data.jpa.support.ColumnToBean;
 import cn.net.vidyo.dylink.data.jpa.support.DefaultEntityEventCallback;
 import cn.net.vidyo.dylink.util.ObjectUtil;
-import cn.net.vidyo.dylink.util.ValueUtil;
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
 import org.hibernate.internal.SessionFactoryImpl;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.hibernate.query.internal.NativeQueryImpl;
 import org.hibernate.query.spi.NativeQueryImplementor;
@@ -17,7 +15,6 @@ import org.hibernate.transform.Transformers;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.jdbc.object.SqlQuery;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -346,7 +343,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     public T getModel(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return getBySql(sql, where.getParams().toArray());
+        return getEntityBySql(sql, where.getParams().toArray());
     }
     public <C> C getColumn(Class<C> cClass,String select, String where, Object... params){
         QueryWhere queryWhere = new QueryWhere(where, params);
@@ -372,7 +369,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     public List<T> query(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryObjectBySql(entityClass, sql, where.getParams().toArray());
+        return executeEntityQueryBySql(entityClass, sql, where.getParams().toArray());
     }
 
     public <C> List<C> queryColumn(Class<C> cClass,String select,String where, Object... params) {
@@ -382,14 +379,14 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     public <C> List<C> queryColumn(Class<C> cClass,QueryWhere selectWhere) {
         String sql = buildQuerySql(selectWhere);
-        return queryObjectBySql(cClass, sql, selectWhere.getParams().toArray());
+        return executeValueQueryBySql(cClass, sql, selectWhere.getParams().toArray());
     }
     public List<Map> queryMap(String where, Object... params){
         return queryMap(new QueryWhere(where, params));
     }
     public List<Map> queryMap(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryMapBySql(sql, where.getParams().toArray());
+        return executeMapQueryBySql(sql, where.getParams().toArray());
     }
 
     //</editor-fold>
@@ -415,12 +412,12 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     public Page<T> pageQuery(Pageable pageable, QueryWhere where) {
         String sql = buildQuerySql(where.getSelect(), where.getWhere());
-        return pageBySql(pageable, sql, where.getParams().toArray());
+        return executePageEntityQueryBySql(pageable,entityClass, sql, where.getParams().toArray());
     }
 
     public Page<T> pageSelectQuery(Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
-        return pageBySql(pageable, sql, params);
+        return executePageEntityQueryBySql(pageable,entityClass, sql, params);
     }
 
     public Page<Map> pageQueryMap(Pageable pageable, String where, Object... params) {
@@ -434,7 +431,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     public Page<Map> pageSelectQueryMap(Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
-        return pageMapBySql(pageable, sql, params);
+        return executePageMapQueryBySql(pageable, sql, params);
     }
 
     public <C>  Page<C> pageQueryColumn(Class<C> cClass, Pageable pageable,String select, String where, Object... params) {
@@ -449,7 +446,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     public <C>  Page<C> pageSelectQueryColumn(Class<C> cClass, Pageable pageable, String select, String where, Object... params) {
         String sql = buildQuerySql(select, where);
-        return pageObjectBySql(cClass, pageable, sql, params);
+        return executePageValuQueryBySql(pageable,cClass,  sql, params);
     }
     //</editor-fold>
     //</editor-fold>
@@ -530,18 +527,18 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     //</editor-fold>
     //<editor-fold desc="sql">
 
-    public T getBySql(String sql, Object... params) {
-        List<T> list = queryBySql(sql, params);
+    public T getEntityBySql(String sql, Object... params) {
+        List<T> list = executeEntityQueryBySql(entityClass, sql, params);
         if (list == null || list.size() == 0) return null;
         return list.get(0);
     }
     public <C> C getObjectBySql(Class<C> cClass, String sql, Object... params) {
-        return  executeValueBySql(cClass, sql, params);
+        return  executeGetEntityBySql(cClass, sql, params);
 //        if (list == null || list.size() == 0) return null;
 //        return list.get(0);
     }
     public Map getMapBySql(String sql, Object... params) {
-        List<Map> maps = queryMapBySql(sql, params);
+        List<Map> maps = executeMapQueryBySql(sql, params);
         if (maps == null || maps.size() == 0) return null;
         return maps.get(0);
     }
@@ -560,117 +557,6 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         sql.append(getTableName());
         return executeUpdate(sql.toString());
     }
-
-    public List<T> queryBySql(String sql, Object... params) {
-//        sql = converToParamIndex(sql);
-//        Query query = entityManager.createNativeQuery(sql);
-//        if (params != null) {
-//            for (int index = 1; index <= params.length; index++) {
-//                query.setParameter(index, params[index - 1]);
-//            }
-//        }
-//        List<T> resultList = query.getResultList();
-//        return resultList;
-        return this.executeValueQueryBySql(entityClass, sql, params);
-    }
-
-    public <C> List<C> queryObjectBySql(Class<C> cClass, String sql, Object... params) {
-        sql = converToParamIndex(sql);
-//        Query query = entityManager.createQuery(sql);
-//        if (params != null) {
-//            for (int index = 1; index <= params.length; index++) {
-//                query.setParameter(index, params[index - 1]);
-//            }
-//        }
-//        List<T> resultList = query.getResultList();
-//        @SuppressWarnings("unchecked")
-//        List<Map> list = query.unwrap(NativeQueryImpl.class)
-//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-//        return list;
-        return this.executeValueQueryBySql(cClass, sql, params);
-    }
-
-    public List<Map> queryMapBySql(String sql, Object... params) {
-        sql = converToParamIndex(sql);
-//        Query query = entityManager.createQuery(sql);
-//        if (params != null) {
-//            for (int index = 1; index <= params.length; index++) {
-//                query.setParameter(index, params[index - 1]);
-//            }
-//        }
-//        List<T> resultList = query.getResultList();
-//        @SuppressWarnings("unchecked")
-//        List<Map> list = query.unwrap(NativeQueryImpl.class)
-//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-//        return list;
-        return executeQueryMapBySql(sql, params);
-    }
-
-    public Page<T> pageBySql(Pageable pageable, String sql, Object... params) {
-        sql = converToParamIndex(sql);
-//        Query query = entityManager.createQuery(sql);
-//        if (params != null) {
-//            for (int index = 1; index <= params.length; index++) {
-//                query.setParameter(index, params[index - 1]);
-//            }
-//        }
-//        List<T> resultList = query.getResultList();
-//        int totalRows = resultList.size();
-//        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-//        query.setMaxResults(pageable.getPageSize());
-//        Page<T> result = new PageImpl<T>(query.getResultList(), pageable, totalRows);
-//        return result;
-        return executePageQueryBySql(pageable, entityClass, sql, params);
-
-//        SQLQuery sqlQuery = entityManager.createNativeQuery(sql).unwrap(SQLQuery.class);
-//        Query query =
-//                sqlQuery.setResultTransformer(Transformers.aliasToBean(BackstageUserListDTO.class));
-//        List<BackstageUserListDTO> list = query.list();
-    }
-
-    public Page<Map> pageMapBySql(Pageable pageable, String sql, Object... params) {
-        sql = converToParamIndex(sql);
-//        Query query = entityManager.createQuery(sql);
-//        //query.unwrap(SQLQuery.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
-//        if (params != null) {
-//            for (int index = 1; index <= params.length; index++) {
-//                query.setParameter(index, params[index - 1]);
-//            }
-//        }
-//        List<T> resultList = query.getResultList();
-//        int totalRows = resultList.size();
-//        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-//        query.setMaxResults(pageable.getPageSize());
-//
-//        @SuppressWarnings("unchecked")
-//        List<Map> list = query.unwrap(NativeQueryImpl.class)
-//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-//        Page<Map> result = new PageImpl<Map>(list, pageable, totalRows);
-//        return result;
-        return executePageQueryMapBySql(pageable, sql, params);
-    }
-    public <C> Page<C> pageObjectBySql(Class<C> cClass,Pageable pageable, String sql, Object... params) {
-        sql = converToParamIndex(sql);
-//        Query query = entityManager.createQuery(sql);
-//        //query.unwrap(SQLQuery.class).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
-//        if (params != null) {
-//            for (int index = 1; index <= params.length; index++) {
-//                query.setParameter(index, params[index - 1]);
-//            }
-//        }
-//        List<T> resultList = query.getResultList();
-//        int totalRows = resultList.size();
-//        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-//        query.setMaxResults(pageable.getPageSize());
-//
-//        @SuppressWarnings("unchecked")
-//        List<Map> list = query.unwrap(NativeQueryImpl.class)
-//                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
-//        Page<Map> result = new PageImpl<Map>(list, pageable, totalRows);
-//        return result;
-        return executePageQueryBySql(pageable,cClass, sql, params);
-    }
-
     //</editor-fold>
     //<editor-fold desc="base sql">
     @Transactional(readOnly = false)
@@ -689,33 +575,36 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     @Transactional(readOnly = true)
-    public T executeModelBySql(
-            String sql,
-            Object... params) {
-        Query query = entityManager.createNativeQuery(sql , entityClass);
-        if (params != null) {
-            int index = 1;
-            for (Object param : params) {
-                query.setParameter(index, param);
-                index++;
-            }
-        }
-        return (T)query.getSingleResult();
-    }
-    @Transactional(readOnly = true)
-    public <E> E executeValueBySql(
+    public <E> E  executeGetEntityBySql(
             Class<E> resultClass,
             String sql,
             Object... params) {
-        javax.persistence.Query query = entityManager.createNativeQuery(sql);
-        if (params != null) {
-            int index = 1;
-            for (Object param : params) {
-                query.setParameter(index, param);
-                index++;
-            }
+        List<E> list = executeEntityQueryBySql(resultClass, sql, params);
+        if(list==null || list.size()==0){
+            return null;
         }
-        return (E)query.getSingleResult();
+        return list.get(0);
+    }
+    @Transactional(readOnly = true)
+    public <E> E executeGetValueBySql(
+            Class<E> resultClass,
+            String sql,
+            Object... params) {
+        List<E> list = executeValueQueryBySql(resultClass, sql, params);
+        if(list==null || list.size()==0){
+            return null;
+        }
+        return list.get(0);
+    }
+    @Transactional(readOnly = true)
+    public Map executeGetMapBySql(
+            String sql,
+            Object... params) {
+        List<Map> list = executeMapQueryBySql( sql, params);
+        if(list==null || list.size()==0){
+            return null;
+        }
+        return list.get(0);
     }
     @Transactional(readOnly = true)
     public <E> List<E> executeValueQueryBySql(
@@ -730,13 +619,14 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
                 index++;
             }
         }
-//        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class);
-                //.setResultTransformer(new ColumnToBean(resultClass));
-//        List resultList = nativeQueryImplementor.getResultList();
-        return query.getResultList();
+        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class);
+//                .setResultTransformer(new ColumnToBean(resultClass));
+        List resultList = nativeQueryImplementor.getResultList();
+//        return query.getResultList();
+        return resultList;
     }
     @Transactional(readOnly = true)
-    public <E> List<E> executeObjectQueryBySql(
+    public <E> List<E> executeEntityQueryBySql(
             Class<E> resultClass,
             String sql,
             Object... params) {
@@ -748,13 +638,31 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
                 index++;
             }
         }
-        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class)
-                .setResultTransformer(new ColumnToBean(resultClass));
-        return nativeQueryImplementor.getResultList();
+//        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class);
+//                .setResultTransformer(new ColumnToBean(resultClass));
+        return query.getResultList();
+    }
+    @Transactional(readOnly = true)
+    public List<Map> executeMapQueryBySql(
+            String sql,
+            Object... params) {
+        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        List<Map> result = query
+                .unwrap(SQLQuery.class)
+                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
+                .list();
+        return result;
     }
 
     @Transactional(readOnly = true)
-    public <E> Page<E> executePageQueryBySql(
+    public <E> Page<E> executePageEntityQueryBySql(
             Pageable page,
             Class<E> resultClass,
             String sql,
@@ -784,26 +692,37 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     @Transactional(readOnly = true)
-    public List<Map> executeQueryMapBySql(
+    public <C> Page<C> executePageValuQueryBySql(
+            Pageable page,
+            Class<C> resultClass,
             String sql,
             Object... params) {
-        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        //获取总记录数
+        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
+
+        //获取分页结果
+        javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);
         if (params != null) {
             int index = 1;
             for (Object param : params) {
-                query.setParameter(index, param);
+                countQuery.setParameter(index, param);
+                pageQuery.setParameter(index, param);
                 index++;
             }
         }
-        List<Map> result = query
-                .unwrap(SQLQuery.class)
-                .setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP)
-                .list();
-        return result;
+        long totalRecord = ((Number) countQuery.getSingleResult()).longValue();
+        List<C> result = totalRecord == 0 ? new ArrayList<>(0) :
+                pageQuery
+                        .setFirstResult((int) page.getOffset())
+                        .setMaxResults(page.getPageSize())
+                        .unwrap(SQLQuery.class)
+//                        .setResultTransformer(new ColumnToBean(resultClass))
+                        .list();
+        return new PageImpl<>(result, page, totalRecord);
     }
 
     @Transactional(readOnly = true)
-    public Page<Map> executePageQueryMapBySql(
+    public Page<Map> executePageMapQueryBySql(
             Pageable page,
             String sql,
             Object... params) {

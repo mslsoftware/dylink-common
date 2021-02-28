@@ -164,19 +164,19 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
 
 
 
-    T getBySql(String sql,Object ... params);
-
-    <C> C getObjectBySql(Class<C> cClass, String sql, Object... params);
-
-    Map getMapBySql(String sql,Object ... params);
-
-    List<T> queryBySql(String sql,Object ... params);
-    <C> List<C> queryObjectBySql(Class<C> cClass, String sql, Object... params);
-    List<Map> queryMapBySql(String sql,Object ... params);
-
-    Page<T> pageBySql(Pageable pageable, String sql,Object ... params);
-    <C> Page<C> pageObjectBySql(Class<C> cClass,Pageable pageable, String sql, Object... params);
-    Page<Map> pageMapBySql(Pageable pageable,String sql,Object ... params);
+//    T getBySql(String sql,Object ... params);
+//
+//    <C> C getObjectBySql(Class<C> cClass, String sql, Object... params);
+//
+//    Map getMapBySql(String sql,Object ... params);
+//
+//    List<T> queryBySql(String sql,Object ... params);
+//    <C> List<C> queryObjectBySql(Class<C> cClass, String sql, Object... params);
+//    List<Map> queryMapBySql(String sql,Object ... params);
+//
+//    Page<T> pageBySql(Pageable pageable, String sql,Object ... params);
+//    <C> Page<C> pageObjectBySql(Class<C> cClass,Pageable pageable, String sql, Object... params);
+//    Page<Map> pageMapBySql(Pageable pageable,String sql,Object ... params);
     //</editor-fold>
     //</editor-fold>
 
@@ -201,17 +201,17 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
             String sql,
             Object ... params);
 
-    <E> Page<E> executePageQueryBySql(
+    <E> Page<E> executePageEntityQueryBySql(
             Pageable page,
             Class<E> resultClass,
             String sql,
             Object... params);
 
-    List<Map> executeQueryMapBySql(
+    List<Map> executeMapQueryBySql(
             String sql,
             Object... params);
 
-    Page<Map> executePageQueryMapBySql(
+    Page<Map> executePageMapQueryBySql(
             Pageable page,
             String sql,
             Object... params);
