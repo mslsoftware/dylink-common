@@ -7,6 +7,10 @@ import cn.net.vidyo.dylink.data.jpa.support.DefaultEntityEventCallback;
 import cn.net.vidyo.dylink.util.ObjectUtil;
 import cn.net.vidyo.dylink.util.ValueUtil;
 import org.hibernate.SQLQuery;
+import org.hibernate.SessionFactory;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.hibernate.query.internal.NativeQueryImpl;
 import org.hibernate.query.spi.NativeQueryImplementor;
 import org.hibernate.transform.Transformers;
@@ -949,6 +953,11 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //</editor-fold>
     protected String getTableName() {
+        SessionFactoryImpl  sessionFactory = (SessionFactoryImpl)entityManager.getEntityManagerFactory().unwrap(SessionFactory.class);
+        SingleTableEntityPersister entityPersister = (SingleTableEntityPersister )sessionFactory.getEntityPersister(entityClass.getName());
+        if(entityPersister!=null){
+            return entityPersister.getTableName();
+        }
         String name = "";
         Table tableAnnotation = (Table) entityClass.getAnnotation(Table.class);
         if (tableAnnotation != null) {
