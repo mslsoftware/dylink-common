@@ -17,6 +17,8 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
     //<editor-fold desc="Extent">
     //<editor-fold desc="update">
 
+//    <S extends T> S insert(S entity);
+//    <S extends T> S update(S entity);
     int updateStatusById(ID id, Object value);
 
 

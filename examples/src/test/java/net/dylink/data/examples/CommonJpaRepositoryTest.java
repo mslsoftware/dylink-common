@@ -52,6 +52,8 @@ public class CommonJpaRepositoryTest {
     @Test
     public void testQuery(){
         UserDao userDao = userService.getRepositoryDao();
+        List<User> query = userDao.query("age=?", 10);
+        System.out.println(query);
         List<Integer> age = userDao.queryColumn(Integer.class, "age", "id<?", 10);
         System.out.println(age);
         List<String> names = userDao.queryColumn(String.class, "name", "id>5 and id<18");

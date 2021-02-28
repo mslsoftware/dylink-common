@@ -296,6 +296,18 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
         return var1;
     }
 
+    public  <S extends T> S insert(S entity){
+        invokeEvent(entity, Event.PrePersist);
+        this.entityManager.persist(entity);
+        invokeEvent(entity, Event.PostPersist);
+        return entity;
+    }
+    public  <S extends T> S update(S entity){
+        invokeEvent(entity, Event.PreUpdate);
+        S merge = this.entityManager.merge(entity);
+        invokeEvent(merge, Event.PostUpdate);
+        return merge;
+    }
     //</editor-fold>
     //<editor-fold desc="delete">
     //@Transactional(readOnly = false)
@@ -360,7 +372,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
     public List<T> query(QueryWhere where) {
         String sql = buildQuerySql(where);
-        return queryBySql(sql, where.getParams().toArray());
+        return queryObjectBySql(entityClass, sql, where.getParams().toArray());
     }
 
     public <C> List<C> queryColumn(Class<C> cClass,String select,String where, Object... params) {
@@ -677,6 +689,20 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     @Transactional(readOnly = true)
+    public T executeModelBySql(
+            String sql,
+            Object... params) {
+        Query query = entityManager.createNativeQuery(sql , entityClass);
+        if (params != null) {
+            int index = 1;
+            for (Object param : params) {
+                query.setParameter(index, param);
+                index++;
+            }
+        }
+        return (T)query.getSingleResult();
+    }
+    @Transactional(readOnly = true)
     public <E> E executeValueBySql(
             Class<E> resultClass,
             String sql,
@@ -704,17 +730,17 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
                 index++;
             }
         }
-        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class);
+//        NativeQueryImplementor nativeQueryImplementor = query.unwrap(NativeQueryImpl.class);
                 //.setResultTransformer(new ColumnToBean(resultClass));
-        List resultList = nativeQueryImplementor.getResultList();
-        return resultList;
+//        List resultList = nativeQueryImplementor.getResultList();
+        return query.getResultList();
     }
     @Transactional(readOnly = true)
     public <E> List<E> executeObjectQueryBySql(
             Class<E> resultClass,
             String sql,
             Object... params) {
-        javax.persistence.Query query = entityManager.createNativeQuery(sql);
+        javax.persistence.Query query = entityManager.createNativeQuery(sql,resultClass);
         if (params != null) {
             int index = 1;
             for (Object param : params) {
@@ -734,7 +760,7 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
             String sql,
             Object... params) {
         //获取总记录数
-        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p");
+        javax.persistence.Query countQuery = entityManager.createNativeQuery("select count(*) from (" + sql + ") as p",resultClass);
 
         //获取分页结果
         javax.persistence.Query pageQuery = entityManager.createNativeQuery(sql);

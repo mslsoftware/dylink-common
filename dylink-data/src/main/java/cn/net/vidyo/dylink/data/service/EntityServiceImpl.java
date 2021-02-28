@@ -13,6 +13,17 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
     }
     protected abstract DAO getEntityDao();
 
+//    @Transactional(readOnly = false)
+//    @Override
+//    public T insert(T t) {
+//        return getEntityDao().insert(t);
+//    }
+//    @Transactional(readOnly = false)
+//    @Override
+//    public T update(T t) {
+//        return getEntityDao().update(t);
+//    }
+
     @Transactional(readOnly = false)
     @Override
     public int updateStatusById(ID id, Object value) {

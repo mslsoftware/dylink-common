@@ -13,6 +13,7 @@ import java.util.List;
 public interface EntityDao <T, ID extends Serializable> extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
     //<editor-fold desc="insert">
     T insert(T t);
+
     //</editor-fold>
     //<editor-fold desc="update">
     //<editor-fold desc="update model">

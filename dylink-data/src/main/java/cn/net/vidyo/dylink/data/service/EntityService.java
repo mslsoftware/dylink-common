@@ -16,7 +16,8 @@ public interface EntityService<DAO extends CommonJpaRepository<T, ID>, T, ID ext
     DAO getRepositoryDao();
     //<editor-fold desc="Extent">
     //<editor-fold desc="update">
-
+//    T insert(T t);
+//    T update(T t);
     int updateStatusById(ID id, Object value);
 
 
