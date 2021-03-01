@@ -83,14 +83,32 @@ public abstract class EntityServiceImpl<DAO extends CommonJpaRepository<T, ID>, 
 
     @Transactional(readOnly = false)
     @Override
-    public int truncateParmeryKey() {
-        return getEntityDao().truncateParmeryKey();
+    public int truncateParmeryKey(Class... entityClasss) {
+        if(entityClasss==null || entityClasss.length==0){
+            return getEntityDao().truncateParmeryKey(getEntityDao().getEntityClass());
+        }else {
+            int count=0;
+            for (Class classs : entityClasss) {
+                int v=getEntityDao().truncateParmeryKey(classs);
+                count=count+v;
+            }
+            return count;
+        }
     }
 
     @Transactional(readOnly = false)
     @Override
-    public int dropTable() {
-        return getEntityDao().dropTable();
+    public int dropTable(Class... entityClasss) {
+        if(entityClasss==null || entityClasss.length==0){
+            return getEntityDao().dropTable(getEntityDao().getEntityClass());
+        }else {
+            int count=0;
+            for (Class classs : entityClasss) {
+                int v=getEntityDao().dropTable(classs);
+                count=count+v;
+            }
+            return count;
+        }
     }
 
     @Override

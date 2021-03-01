@@ -43,9 +43,9 @@ public interface EntityService<DAO extends CommonJpaRepository<T, ID>, T, ID ext
 
     T getByEntityId(T t);
 
-    int truncateParmeryKey();
+    int truncateParmeryKey(Class... entityClasss);
 
-    int dropTable();
+    int dropTable(Class... entityClasss);
 
 
     //</editor-fold>

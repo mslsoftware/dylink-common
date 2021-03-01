@@ -48,9 +48,9 @@ public interface CommonJpaRepository<T, ID extends Serializable> extends JpaRepo
 
     T getByEntityId(T t);
 
-    int truncateParmeryKey();
+    int truncateParmeryKey(Class entityClass);
 
-    int dropTable();
+    int dropTable(Class entityClass);
 
 
     //</editor-fold>

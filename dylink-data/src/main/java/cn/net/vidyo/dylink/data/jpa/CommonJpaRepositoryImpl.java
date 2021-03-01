@@ -544,17 +544,17 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
     }
 
     @Override
-    public int truncateParmeryKey() {
+    public int truncateParmeryKey(Class entityClass) {
         StringBuilder sql = new StringBuilder();
         sql.append("TRUNCATE TABLE ");
-        sql.append(getTableName());
+        sql.append(getTableName(entityClass));
         return executeUpdate(sql.toString());
     }
 
-    public int dropTable() {
+    public int dropTable(Class entityClass) {
         StringBuilder sql = new StringBuilder();
         sql.append("DROP TABLE ");
-        sql.append(getTableName());
+        sql.append(getTableName(entityClass));
         return executeUpdate(sql.toString());
     }
     //</editor-fold>
@@ -898,6 +898,30 @@ public class CommonJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJ
 
     //</editor-fold>
     protected String getTableName() {
+        SessionFactoryImpl  sessionFactory = (SessionFactoryImpl)entityManager.getEntityManagerFactory().unwrap(SessionFactory.class);
+        SingleTableEntityPersister entityPersister = (SingleTableEntityPersister )sessionFactory.getEntityPersister(entityClass.getName());
+        if(entityPersister!=null){
+            return entityPersister.getTableName();
+        }
+        String name = "";
+        Table tableAnnotation = (Table) entityClass.getAnnotation(Table.class);
+        if (tableAnnotation != null) {
+            name = tableAnnotation.name();
+        }
+        if (name != null && !name.isEmpty()) {
+            return name;
+        }
+        Entity entityAnnotation = (Entity) entityClass.getAnnotation(Entity.class);
+        if (entityAnnotation != null) {
+            name = entityAnnotation.name();
+        }
+        if (name != null && !name.isEmpty()) {
+            return name;
+        }
+        String simpleName = entityClass.getSimpleName();
+        return simpleName;
+    }
+    protected String getTableName(Class entityClass) {
         SessionFactoryImpl  sessionFactory = (SessionFactoryImpl)entityManager.getEntityManagerFactory().unwrap(SessionFactory.class);
         SingleTableEntityPersister entityPersister = (SingleTableEntityPersister )sessionFactory.getEntityPersister(entityClass.getName());
         if(entityPersister!=null){
