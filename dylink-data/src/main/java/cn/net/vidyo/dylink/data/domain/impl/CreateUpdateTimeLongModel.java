@@ -1,10 +1,13 @@
 package cn.net.vidyo.dylink.data.domain.impl;
 
+import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public class CreateUpdateTimeLongModel extends LongModel {
+    @Column(columnDefinition="bigint  COMMENT '创建时间'")
     long createtime =0;
+    @Column(columnDefinition="bigint  COMMENT '更新时间'")
     long updatetime =0;
 
     @Override

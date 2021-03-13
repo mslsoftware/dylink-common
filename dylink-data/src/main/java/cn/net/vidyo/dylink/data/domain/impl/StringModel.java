@@ -4,6 +4,7 @@ package cn.net.vidyo.dylink.data.domain.impl;
 
 import cn.net.vidyo.dylink.data.domain.Model;
 
+import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
@@ -11,6 +12,7 @@ import javax.persistence.MappedSuperclass;
 public class StringModel extends Model<String> {
 
     @Id
+    @Column(columnDefinition="int COMMENT '字符串主键'")
     private String id="";//唯一标识
 
     @Override

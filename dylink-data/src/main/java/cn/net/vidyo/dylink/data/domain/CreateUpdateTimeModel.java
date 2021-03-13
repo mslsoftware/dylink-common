@@ -1,11 +1,14 @@
 package cn.net.vidyo.dylink.data.domain;
 
+import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 
 @MappedSuperclass
 public abstract class CreateUpdateTimeModel<ID  extends Serializable> extends Model<ID> {
+    @Column(columnDefinition="bigint  COMMENT '创建时间'")
     long createtime =0;
+    @Column(columnDefinition="bigint  COMMENT '更新时间'")
     long updatetime =0;
 
     @Override
